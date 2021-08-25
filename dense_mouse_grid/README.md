@@ -1,6 +1,6 @@
 This is the "dense mouse grid". It fills the screen with fields that can be reached with two letters and a number.
 
-To use this, put the folder dense_mouse_grid anywhere in the talon user directory.  
+To use this, put the folder dense_mouse_grid anywhere in the talon user directory. This assumes that 1. you have Talon installed, and 2. you are using the knausj talon repository detailed in the [installation instructions here](https://talonvoice.com/docs/index.html#getting-started)
 
 ![image](https://user-images.githubusercontent.com/1163925/130808333-219a48b3-650c-4d4c-9a99-d9909011132d.png)
 
@@ -18,19 +18,19 @@ then use these voice commands:
 
 The grid will appear in frame mode.  Frame mode 'frames' each of the large blocks with letters to indicate row and column.  Saying a coordinate in the following manner: 
 
-'two'
+**two**
 
 This will select the first block, make the large number two disappear, and remove the color overlay to show that this block is the actively selected block. 
 
-'cap'
+**cap**
 
 This will select row C.  A red row will appear with all of the letters in row c. 
 
-'drum'
+**drum**
 
 This will select column 'd' and move the mouse pointer to coordinate '2 C D'
 
-'touch' will click the mouse pointer.  
+**touch** will click the mouse pointer.  
 
 
 It is not necessary to have pauses between the coordinates.  You can say 
