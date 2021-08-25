@@ -4,7 +4,7 @@ To use this, put the folder dense_mouse_grid anywhere in the talon user director
 
 ![image](https://user-images.githubusercontent.com/1163925/130808333-219a48b3-650c-4d4c-9a99-d9909011132d.png)
 
-![Playing Dominion Using The Dense Mouse Grid](https://youtu.be/ookc134jPNQ)
+![Video Demonstration of Playing Dominion Using The Dense Mouse Grid](https://youtu.be/ookc134jPNQ)
 
 
 
