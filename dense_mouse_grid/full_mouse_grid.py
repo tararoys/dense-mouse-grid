@@ -234,6 +234,7 @@ class MouseSnapMillion:
 
     def draw(self, canvas):
         paint = canvas.paint
+        self.field_size = int(setting_field_size.get())
 
         # for other-screen or individual-window grids
         canvas.translate(self.rect.x, self.rect.y)

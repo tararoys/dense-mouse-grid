@@ -29,11 +29,12 @@ settings():
 
     # Set the size of the smaller blocks.  This is the setting that ajusts the sizing of everything.  
 
-    user.full_mouse_grid_field_size = "70"
+    user.full_mouse_grid_field_size = "40"
 
     ## ------ label settings
 
-    # This feature is only unimplemented.  While it is possible to set this setting to any random string of characters you want, doing it with anything but letters will make the letter commands not work.     
+    # This feature is only unimplemented.  While it is possible to set this setting to any random string of characters you want, doing it with anything but letters will make the letter commands not work. 
+
     # user.interior_block_coordinate_characters = "abcdefghijklmnopqrstuvwxyz"
 
 
