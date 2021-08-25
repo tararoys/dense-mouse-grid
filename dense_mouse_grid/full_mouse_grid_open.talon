@@ -29,7 +29,9 @@ and not mode: sleep
     # user.full_grid_close()
 
 <number> <user.letter> <user.letter>:
-    user.full_grid_select(letter_1 + letter_2, number, "")
+    user.full_grid_input_partial(number)
+    user.full_grid_input_partial(letter_1)
+    user.full_grid_input_partial(letter_2)
     # user.full_grid_close()
 
 ^<number>$:
