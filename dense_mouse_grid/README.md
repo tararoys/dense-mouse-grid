@@ -1,8 +1,7 @@
-This is the "full mouse grid". It fills the screen with fields that can be reached with two letters and a number.
+This is the "dense mouse grid". It fills the screen with fields that can be reached with two letters and a number.
 
-__To activate it, put this in whatever talon file you use for settings:__
+To use this, put the folder dense_mouse_grid anywhere in the talon user directory.  
 
-`tag(): user.full_mouse_grid_enabled`
 
 ![](https://gist.githubusercontent.com/timo/b3429ede632f0eb9cac0eb142746dc3b/raw/ebf6185ded98d1ff960047c351d45c6618906891/screenshot.png)
 
@@ -10,9 +9,44 @@ __To activate it, put this in whatever talon file you use for settings:__
 
 then use these voice commands:
 
-* `alphabet soup` to show the grid
+* `alphabet soup` to show the grid. 
 * `alphabet win` to put the grid over the active window
 * `alphabet screen <number>` to put the grid over a different screen from the first one
+
+# Basic usage in Frame Mode
+
+The grid will appear in frame mode.  Frame mode 'frames' each of the large blocks with letters to indicate row and column.  Saying a coordinate in the following manner: 
+
+'two'
+
+This will select the first block, make the large number two disappear, and remove the color overlay to show that this block is the actively selected block. 
+
+'cap'
+
+This will select row C.  A red row will appear with all of the letters in row c. 
+
+'drum'
+
+This will select column 'd' and move the mouse pointer to coordinate '2 C D'
+
+'touch' will click the mouse pointer.  
+
+
+It is not necessary to have pauses between the coordinates.  You can say 
+
+'2 Cap Drum' and it will move the mouse pointer to coordinate 2 C D, without showing all the helper graphics.
+
+# Other Modes
+
+If frame mode does not suit you, there are two other modes that can be used to show the coordinates.  
+
+'alphabet checkers' turns on checker mode, which overlays the coordiantes in a checker pattern. This can be visually confusing, but it splits the difference between being able to immediately see the coordinate and being able to see the contents of your screen.  
+
+'alphabet full' shows every possible coordinate. 
+
+'alphabet frame' switches back to the default frame mode.
+
+# Using the Linked Commands
 
 When the screen is showing you can select fields using your alphabet words and a number for the field:
 
@@ -20,19 +54,10 @@ When the screen is showing you can select fields using your alphabet words and a
 * `one drum gust` selects field DG in the top left field
 * `three vest near` selects field VN in whatever field has number 3
 
-There are some commands to customize what the grid looks like:
 
-* `alphabet rulers` turns on "rulers" that show the letters on the top and bottom as well as left and right, useful mostly for `alphabet win`
-* `alphabet checkers` hides or shows every other field so you can see more of the screen content
+# using just alphabet coordinates
 
-Future plans:
 
-* allow refining the target position more by adding another number (a la numpad / M grid)
-* allow refining the target position with points-of-compass names
-* allow refining even more closely with something like "plus" or "minus"
-* make the superblock that contains the mouse cursor when the grid is brought up the "default" so the number doesn't have to be said
+When you already have a number block selected, you can simply say 'bat cap' and it will select coordiante 'bat cap'
 
-Possible ideas:
-
-* configure look even more with voice commands; colors, transparency, etc
-* make size of fields configurable with voice commands as well
+By default, the grid stays up.  You can turn off the grid by saying 'grid close.'

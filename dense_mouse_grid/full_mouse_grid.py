@@ -1,4 +1,4 @@
-# written by timo, based on mousegrid written by timo and cleaned up a lot by aegis
+# written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily edited by Tara 
 from talon import Module, Context, app, actions, canvas, screen, settings, ui, ctrl, cron
 from talon.skia import Shader, Color, Paint, Rect
 from talon.types.point import Point2d

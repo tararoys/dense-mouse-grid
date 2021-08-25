@@ -2,6 +2,7 @@ tag: user.full_mouse_grid_showing
 and tag: user.full_mouse_grid_enabled
 and mode: user.full_mouse_grid
 and not mode: sleep
+
 -
 
 <user.letter> <user.letter> <number>:
@@ -70,8 +71,11 @@ thinner broth:
 what the [heck | fuck]:
     app.notify("say alphabet close to get rid of the alphabet soup")
 
+
+
 touch: 
     mouse_click(0)
 
-<user.prose>: skip()
+#If you want to be able to say random things without remembering to put talon to sleep, uncomment this command
+#<user.prose>: skip()
     
