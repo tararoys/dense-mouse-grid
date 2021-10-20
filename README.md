@@ -8,18 +8,18 @@ The Alphabet Soup mouse is a completely hands-free replacement for traditional m
 
 To open the dense mouse grid, say 
 
-  alphabet soup
+    alphabet soup
 
 To close the dense mouse grid, say
 
-  alphabet close
+    alphabet close
   
 
 ![open-close-small](https://user-images.githubusercontent.com/1163925/138029358-a9e16d56-5a30-4230-9150-fd70ef2dc52c.gif)
 
 To use the mouse grid, say a number and two letters from whichever Talon phonetic alphabet you are using.  For example, if you are using the default Talon phonetic alphabet that comes with the knausj-talon repository, to go grid location grid square 1, row B, colum C, you would say 
 
-  One Bat Cap 
+    One Bat Cap 
 
 
 ![one-bat-cap-two-bat-zip-small](https://user-images.githubusercontent.com/1163925/138029385-bcd191fa-3281-4f00-aab3-91696b095bab.gif)
@@ -28,15 +28,15 @@ The Mouse Grid has 3 modes: frame mode, the default, a checkerboard mode, and a 
   
 To activate checkers, say
 
-  alphabet checkers
+    alphabet checkers
  
 To activate full, say 
   
-  alphabet full
+    alphabet full
   
 The mouse grid comes set to frame mode by default.  To activate frame mode, say 
    
-  alphabet frame
+    alphabet frame
 
 ![alphabet-checkers-alphabet-full-alphabet-frame-small](https://user-images.githubusercontent.com/1163925/138029428-42949116-e92c-4a11-8824-46bc0b86c974.gif)
 
