@@ -73,6 +73,8 @@ The mouse grid comes set to frame overlay by default.  To activate frame overlay
 
 ![alphabet-checkers-alphabet-full-alphabet-frame-small](https://user-images.githubusercontent.com/1163925/138029428-42949116-e92c-4a11-8824-46bc0b86c974.gif)
 
+# Scale Up And Down The Whole Grid
+        
 To **scale up the whole grid**, say the command 
   
     bigger bowl
@@ -83,6 +85,7 @@ To **scale it down,** say
 
 ![bigger-bowl-smaller-bowl](https://user-images.githubusercontent.com/1163925/138029441-99e0793e-f3d3-49fd-9dab-e357914d4e11.gif)
 
+#Make the Background More Transparent
   
  To **make the background more transparent**, say 
   
@@ -95,6 +98,8 @@ To **scale it down,** say
 
 ![thicker-broth-thinner-broth-small](https://user-images.githubusercontent.com/1163925/138029866-d0453c1d-bf0d-4d40-9fef-eaaa5773d414.gif)
 
+ # Make letter Labels More Transparent
+       
  To **make the letter labels more transparent**, say 
    
     eat noodles
