@@ -60,11 +60,11 @@ eat noodles:
 
 thicker broth:
     # Make the large number blocks more visible.  
-    user.full_grid_adjust_bg_transparency(50)
+    user.full_grid_adjust_bg_transparency(20)
 
 thinner broth:
     #Make the large number blocks less visible. 
-    user.full_grid_adjust_bg_transparency(-50)
+    user.full_grid_adjust_bg_transparency(-20)
 
 bigger bowl: 
     # Make the grid blocks larger.
