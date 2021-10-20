@@ -82,8 +82,8 @@ To **scale up the whole grid**, say the command
 To **scale it down,** say 
     
     smaller bowl. 
-
-![bigger-bowl-smaller-bowl](https://user-images.githubusercontent.com/1163925/138029441-99e0793e-f3d3-49fd-9dab-e357914d4e11.gif)
+        
+![bigger-bowl-smaller-bowl-small](https://user-images.githubusercontent.com/1163925/138033703-a5e89c76-ed5c-45d5-b482-1e05d2f64296.gif)
 
 # Make the Background More Transparent
   
@@ -103,6 +103,7 @@ To **scale it down,** say
  To **make the letter labels more transparent**, say 
    
     eat noodles
+
 
  To **make the letters less transparent**, say 
   
