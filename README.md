@@ -85,7 +85,7 @@ To **scale it down,** say
 
 ![bigger-bowl-smaller-bowl](https://user-images.githubusercontent.com/1163925/138029441-99e0793e-f3d3-49fd-9dab-e357914d4e11.gif)
 
-#Make the Background More Transparent
+# Make the Background More Transparent
   
  To **make the background more transparent**, say 
   
