@@ -69,6 +69,21 @@ setting_field_size = mod.setting(
     desc="sets the default size of the small grid blocks",
 )
 
+setting_superblock_transparency = mod.setting(
+    "full_mouse_grid_superblock_transparency",
+    type=str,
+    default="0x22",
+    desc="sets the default size of large grid blocks",
+)
+
+setting_label_transparency = mod.setting(
+    "full_mouse_grid_superblock_transparency",
+    type=str,
+    default="0x99",
+    desc="sets the default size of large grid blocks",
+)
+
+
 ctx = Context()
 
 ctx.matches = r"""
@@ -229,10 +244,10 @@ class MouseSnapMillion:
         self.rows    =  int(self.rect.height // self.field_size)
 
         # set the label transparency 
-        self.label_transparency = 0x99
+        self.label_transparency = int(setting_label_transparency.get(), 16)
         
         # set the background transparency
-        self.bg_transparency = 0x22
+        self.bg_transparency = int(setting_superblock_transparency.get(), 16)
 
         self.history = []
 
