@@ -21,9 +21,6 @@ settings():
     
     #sets the stroke color of the superblock (Also known as the oudline color, for those of you who are not vector graphics artists)
     user.full_mouse_grid_superblock_stroke_color = "ffffff"
-    
-
-
 
     ## ------- size settings
 
@@ -31,9 +28,19 @@ settings():
 
     user.full_mouse_grid_field_size = "40"
 
+    ## ------- overlay transparency settings. 
+
+    #sets the transparecny of the large grid squares
+
+    user.full_mouse_grid_superblock_transparency = "0x44"
+
+    ##sets the transparency of the small blocks.
+
+    user.full_mouse_grid_label_transparency = "0x77"
+
     ## ------ label settings
 
-    # This feature is only unimplemented.  While it is possible to set this setting to any random string of characters you want, doing it with anything but letters will make the letter commands not work. 
+    # This feature is unimplemented.  While it is possible to set this setting to any random string of characters you want, doing it with anything but letters will make the letter commands not work. 
 
     # user.interior_block_coordinate_characters = "abcdefghijklmnopqrstuvwxyz"
 

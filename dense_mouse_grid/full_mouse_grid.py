@@ -73,14 +73,14 @@ setting_superblock_transparency = mod.setting(
     "full_mouse_grid_superblock_transparency",
     type=str,
     default="0x22",
-    desc="sets the default size of large grid blocks",
+    desc="sets the transparency of the superblocks",
 )
 
 setting_label_transparency = mod.setting(
-    "full_mouse_grid_superblock_transparency",
+    "full_mouse_grid_label_transparency",
     type=str,
     default="0x99",
-    desc="sets the default size of large grid blocks",
+    desc="sets the transparency of the labels",
 )
 
 
