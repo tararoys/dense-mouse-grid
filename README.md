@@ -2,7 +2,8 @@
 
 A hands-free mouse grid by Tara Roys, timotimo, and aegis.
 
-This script depends on having support from a phonetic alphabet and numbers scritps.  It is designed to be used along with the knausj-talon repository, but is compatable with any repository that provides the letters a-z using the <user.letters> capture and the <numbers> caputre.
+To use this, put the folder dense_mouse_grid anywhere in the talon user directory. This assumes that 1. you have Talon installed, and 2. you are using the knausj talon repository detailed in the [installation instructions here](https://talonvoice.com/docs/index.html#getting-started)  This script depends on having support from a phonetic alphabet and numbers scripts.  It is designed to be used along with the knausj-talon repository, but is compatable with any repository that provides the letters a-z using the <user.letters> capture and numbers using the <numbers> caputure.
+        
 
 The Alphabet Soup mouse is a completely hands-free replacement for traditional mousing. It replaces mouse movements with voice commands.  You tell the computer what grid coordinate you want to move to on the screen, and the mouse grid moves your cursor to that location
 
