@@ -7,6 +7,8 @@ To use this, put the folder dense_mouse_grid anywhere in the talon user director
 
 The Alphabet Soup mouse is a completely hands-free replacement for traditional mousing. It replaces mouse movements with voice commands.  You tell the computer what grid coordinate you want to move to on the screen, and the mouse grid moves your cursor to that location
 
+# Opening The Mouse Grid
+        
 To **open the dense mouse grid,** say 
 
     alphabet soup
@@ -18,18 +20,42 @@ To **close the dense mouse grid**, say
 
 ![open-close-small](https://user-images.githubusercontent.com/1163925/138029358-a9e16d56-5a30-4230-9150-fd70ef2dc52c.gif)
 
+# Using The Mouse Grid        
+        
 To **use the mouse grid, say a number and two letters from whichever Talon phonetic alphabet you are using.**  For example, if you are using the default Talon phonetic alphabet that comes with the knausj-talon repository, to go grid location grid square 1, row B, colum C, you would say 
 
     One Bat Cap 
     
 You can say each coordinate slowly, as individual commands, and each time you say a command the grid will give a visual indicator of what you have chosen.  As you get more proficient, you can say the command quickly and the grid will teleport the mouse to that coordinate.  
+        
 
+The grid will appear with the frame overlay.  the frame overlaty 'frames' each of the large blocks with letters to indicate row and column.  Saying a coordinate in the following manner: 
+
+    two
+
+This will select the two block, make the large number two disappear, and remove the color overlay to show that this block is the actively selected block. 
+
+    bat
+
+This will select row B.  A red row will appear with all of the letters in row c. 
+
+    zip
+
+This will select column 'Z' and move the mouse pointer to coordinate '2 B Z'
+
+   touch 
+        
+will left-click the mouse pointer.  
+
+        
 ![one-bat-cap-two-bat-zip-small](https://user-images.githubusercontent.com/1163925/138029385-bcd191fa-3281-4f00-aab3-91696b095bab.gif)
 
-The Mouse Grid has 3 visual modes to help remind you spot locations on the screen: 
-       * **frame mode**, the default, which puts a frame of letters around every large number block and leaves most of the screen clear,  
-       * **checkerboard mode**, which puts an alternating checkerboard pattern of letters across the scren
-       * **full mode**.  which puts letters on every possible coordinate. 
+# Mouse Grid Overlays
+        
+The Mouse Grid has 3 overlays to help remind you spot locations on the screen: 
+       * **frame overlay**, the default, which puts a frame of letters around every large number block and leaves most of the screen clear,  
+       * **checkerboard overlay**, which puts an alternating checkerboard pattern of letters across the scren
+       * **full overlay**.  which puts letters on every possible coordinate. 
 
 Each pattern has advantages and disadvantages. Full mode displays every possible coordinate.  The coordinates made visible in full mode are there in every mode.  Checkerboard mode and frame mode simply hide a lot of the labels so that it is easier to see what you are trying to point at.  
   
@@ -41,7 +67,7 @@ To activate full, say
   
     alphabet full
   
-The mouse grid comes set to frame mode by default.  To activate frame mode, say 
+The mouse grid comes set to frame overlay by default.  To activate frame overlay, say 
    
     alphabet frame
 
