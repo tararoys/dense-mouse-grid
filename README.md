@@ -52,10 +52,11 @@ will left-click the mouse pointer.
 
 # Mouse Grid Overlays
         
-The Mouse Grid has 3 overlays to help remind you spot locations on the screen: 
-       * **frame overlay**, the default, which puts a frame of letters around every large number block and leaves most of the screen clear,  
-       * **checkerboard overlay**, which puts an alternating checkerboard pattern of letters across the scren
-       * **full overlay**.  which puts letters on every possible coordinate. 
+The Mouse Grid has 3 overlays to help remind you spot locations on the screen:
+        
+* `frame overlay`, the default, which puts a frame of letters around every large number block and leaves most of the screen clear,  
+* `checkerboard overlay`, which puts an alternating checkerboard pattern of letters across the scren
+* `full overlay`,  which puts letters on every possible coordinate. 
 
 Each pattern has advantages and disadvantages. Full mode displays every possible coordinate.  The coordinates made visible in full mode are there in every mode.  Checkerboard mode and frame mode simply hide a lot of the labels so that it is easier to see what you are trying to point at.  
   
