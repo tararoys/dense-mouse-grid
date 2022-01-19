@@ -249,7 +249,7 @@ class MouseSnapMillion:
         # set the background transparency
         self.bg_transparency = int(setting_superblock_transparency.get(), 16)
 
-        self.history = []
+        self.historby = []
 
         self.active = False
 

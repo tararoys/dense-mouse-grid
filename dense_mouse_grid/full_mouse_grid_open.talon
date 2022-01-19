@@ -34,43 +34,43 @@ tag: user.full_mouse_grid_showing
     user.full_grid_input_partial(letter)
 
 
-alphabet close:
+[dense] grid close:
     # close the grid. 
     user.full_grid_close()
 
-alphabet checkers:
+checker grid:
     # change the overlay pattern to a checkerboard pattern.
     user.full_grid_checkers()
 
-alphabet frame:
+frame grid:
     # change the overlay pattern to a pattern where it is overlaid with frames.
     user.full_grid_frame()
 
-alphabet full:
+full grid:
     # change the overlay pattern to overlay the screen with every possible number-letter-letter combination 
    user.full_grid_full()
 
-add noodles:
+darker letters:
     # Make the small letter labels more visible.
     user.full_grid_adjust_label_transparency(50)
 
-eat noodles:
+lighter letters:
     # Make the small letter labels less visible.
     user.full_grid_adjust_label_transparency(-50)
 
-thicker broth:
+darker background:
     # Make the large number blocks more visible.  
     user.full_grid_adjust_bg_transparency(20)
 
-thinner broth:
+lighter background:
     #Make the large number blocks less visible. 
     user.full_grid_adjust_bg_transparency(-20)
 
-bigger bowl: 
+bigger grid: 
     # Make the grid blocks larger.
     user.full_grid_adjust_size(5)
 
-smaller bowl: 
+smaller grid: 
     # Make the grib blocks smaller. 
     user.full_grid_adjust_size(-5)
 
