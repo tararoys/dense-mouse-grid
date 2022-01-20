@@ -488,7 +488,7 @@ class MouseSnapMillion:
                     background_rect = background_rect.inset(-4) 
                 elif(letters[col % len(letters)] == 'a'):
                     
-                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
+                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(letters)]}" #gets the phonetic words currently being used
                     # this the measure text is the box around the text.  
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     #canvas.paint.textsize = int(field_size*4/5)
@@ -501,35 +501,55 @@ class MouseSnapMillion:
                     )  #I think this re-centers the point?  
                     background_rect = background_rect.inset(-4) 
 
-
-            # sees if the background schould be highlighted
-            if (self.input_so_far.startswith(letters[row % len(letters)]) or
+            if not (self.input_so_far.startswith(letters[row % len(letters)]) or not
                     len(self.input_so_far) > 1 and self.input_so_far.endswith(letters[col % len(letters)])):
-                canvas.paint.color = setting_row_highlighter.get() + hx(self.label_transparency) #check if someone has said a letter and highlight a row, or check if two letters have been said and highlight a column
-            #colors it the ordinary background. 
-                text_string = f"{letters[col % len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
-            # this the measure text is the box around the text.  
-                canvas.paint.textsize = int(self.field_size * 3 / 5)
-                #canvas.paint.textsize = int(field_size*4/5)
-                text_rect = canvas.paint.measure_text(text_string)[1] #find out how many characters long the text is?
-
-                background_rect = text_rect.copy()
-                background_rect.center = Point2d(
-                    col * self.field_size + self.field_size / 2,
-                    row * self.field_size + self.field_size / 2,
-                )  #I think this re-centers the point?  
-                background_rect = background_rect.inset(-4) 
-            else:
                 canvas.paint.color = setting_letters_background_color.get() + hx(self.label_transparency)
                 canvas.paint.style = Paint.Style.FILL
-            canvas.draw_rect(background_rect)
-            canvas.paint.color = setting_small_letters_color.get() +hx(self.label_transparency)
-            #paint.style = Paint.Style.STROKE
-            canvas.draw_text(
-                text_string,
-                col * self.field_size + self.field_size / 2,
-                row * self.field_size + self.field_size / 2 + text_rect.height / 2
+                canvas.draw_rect(background_rect)
+                canvas.paint.color = setting_small_letters_color.get() +hx(self.label_transparency)
+                #paint.style = Paint.Style.STROKE
+                canvas.draw_text(
+                    text_string,
+                    col * self.field_size + self.field_size / 2,
+                    row * self.field_size + self.field_size / 2 + text_rect.height / 2
                 )
+
+            # sees if the background schould be highlighted
+            elif (self.input_so_far.startswith(letters[row % len(letters)]) or
+                    len(self.input_so_far) > 1 and self.input_so_far.endswith(letters[col % len(letters)])):
+                #draw columns of phonetic words
+
+                phonetic_word = list(registry.lists['user.letter'][0].keys())[col%len(letters)]
+                letter_list = list(phonetic_word)
+                for index, letter in enumerate(letter_list):
+                    print(letter)
+                    if index is 0: 
+                        canvas.paint.color = setting_row_highlighter.get() + hx(self.label_transparency) #check if someone has said a letter and highlight a row, or check if two letters have been said and highlight a column
+            #colors it the ordinary background. 
+                    else:
+                        canvas.paint.color = setting_letters_background_color.get() + hx(self.label_transparency)
+                    text_string = f"{letter}" # gets a letter from the alphabet of the form 'ab' or 'DA'
+            # this the measure text is the box around the text.  
+                    canvas.paint.textsize = int(self.field_size * 3 / 5)
+                #canvas.paint.textsize = int(field_size*4/5)
+                    text_rect = canvas.paint.measure_text(text_string)[1] #find out how many characters long the text is?
+
+                    background_rect = text_rect.copy()
+                    background_rect.center = Point2d(
+                        col * self.field_size + self.field_size / 2,
+                        row * self.field_size + (self.field_size / 2 + text_rect.height / 2) * (index +1 ) 
+                    )  #I think this re-centers the point?  
+                    background_rect = background_rect.inset(-4) 
+                    canvas.draw_rect(background_rect)
+                    canvas.paint.color = setting_small_letters_color.get() +hx(self.label_transparency)
+                    #paint.style = Paint.Style.STROKE
+                    canvas.draw_text(
+                        text_string,
+                        col * self.field_size + (self.field_size / 2),
+                        row * self.field_size + (self.field_size / 2 + text_rect.height / 2) * (index + 1)
+                    )
+
+
 
         def draw_rulers():
             for (x_pos, align) in [(-3, canvas.paint.TextAlign.RIGHT), (self.rect.width + 3, canvas.paint.TextAlign.LEFT)]:
