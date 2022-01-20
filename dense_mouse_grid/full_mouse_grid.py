@@ -471,11 +471,53 @@ class MouseSnapMillion:
             )  #I think this re-centers the point?  
             background_rect = background_rect.inset(-4)
 
+            # remove distracting letters from frame mode frames. 
+            if self.pattern == "frame":
+                if(letters[row % len(letters)] == 'a'):
+                    text_string = f"{letters[col % len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
+                    # this the measure text is the box around the text.  
+                    canvas.paint.textsize = int(self.field_size * 3 / 5)
+                    #canvas.paint.textsize = int(field_size*4/5)
+                    text_rect = canvas.paint.measure_text(text_string)[1] #find out how many characters long the text is?
+
+                    background_rect = text_rect.copy()
+                    background_rect.center = Point2d(
+                        col * self.field_size + self.field_size / 2,
+                        row * self.field_size + self.field_size / 2,
+                    )  #I think this re-centers the point?  
+                    background_rect = background_rect.inset(-4) 
+                elif(letters[col % len(letters)] == 'a'):
+                    text_string = f"{letters[row % len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
+                    # this the measure text is the box around the text.  
+                    canvas.paint.textsize = int(self.field_size * 3 / 5)
+                    #canvas.paint.textsize = int(field_size*4/5)
+                    text_rect = canvas.paint.measure_text(text_string)[1] #10find out how many characters long the text is?
+
+                    background_rect = text_rect.copy()
+                    background_rect.center = Point2d(
+                        col * self.field_size + self.field_size / 2,
+                        row * self.field_size + self.field_size / 2,
+                    )  #I think this re-centers the point?  
+                    background_rect = background_rect.inset(-4) 
+
+
             # sees if the background schould be highlighted
             if (self.input_so_far.startswith(letters[row % len(letters)]) or
                     len(self.input_so_far) > 1 and self.input_so_far.endswith(letters[col % len(letters)])):
                 canvas.paint.color = setting_row_highlighter.get() + hx(self.label_transparency) #check if someone has said a letter and highlight a row, or check if two letters have been said and highlight a column
-            #colors it the ordinary background.  
+            #colors it the ordinary background. 
+                text_string = f"{letters[col % len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
+            # this the measure text is the box around the text.  
+                canvas.paint.textsize = int(self.field_size * 3 / 5)
+                #canvas.paint.textsize = int(field_size*4/5)
+                text_rect = canvas.paint.measure_text(text_string)[1] #find out how many characters long the text is?
+
+                background_rect = text_rect.copy()
+                background_rect.center = Point2d(
+                    col * self.field_size + self.field_size / 2,
+                    row * self.field_size + self.field_size / 2,
+                )  #I think this re-centers the point?  
+                background_rect = background_rect.inset(-4) 
             else:
                 canvas.paint.color = setting_letters_background_color.get() + hx(self.label_transparency)
                 canvas.paint.style = Paint.Style.FILL
