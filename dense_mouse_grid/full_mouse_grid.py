@@ -1,5 +1,5 @@
 # written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily edited by Tara 
-from talon import Module, Context, app, actions, canvas, screen, settings, ui, ctrl, cron
+from talon import Module, Context, app, actions, canvas, screen, settings, ui, ctrl, cron, registry
 from talon.skia import Shader, Color, Paint, Rect
 from talon.types.point import Point2d
 from talon_plugins import eye_mouse, eye_zoom_mouse
@@ -474,12 +474,12 @@ class MouseSnapMillion:
             # remove distracting letters from frame mode frames. 
             if self.pattern == "frame":
                 if(letters[row % len(letters)] == 'a'):
+
                     text_string = f"{letters[col % len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
                     # this the measure text is the box around the text.  
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     #canvas.paint.textsize = int(field_size*4/5)
                     text_rect = canvas.paint.measure_text(text_string)[1] #find out how many characters long the text is?
-
                     background_rect = text_rect.copy()
                     background_rect.center = Point2d(
                         col * self.field_size + self.field_size / 2,
@@ -487,7 +487,8 @@ class MouseSnapMillion:
                     )  #I think this re-centers the point?  
                     background_rect = background_rect.inset(-4) 
                 elif(letters[col % len(letters)] == 'a'):
-                    text_string = f"{letters[row % len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
+                    
+                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
                     # this the measure text is the box around the text.  
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     #canvas.paint.textsize = int(field_size*4/5)
