@@ -29,11 +29,11 @@ By default, the grid stays up.  You can turn off the grid by saying `grid close`
 
 # Basic usage in Frame Mode
 
-The grid will appear in Frame Mode.  Frame Mode 'frames' each of the large numbered blocks with letters to indicate row and column.  Saying a coordinate with long pauses between each word will work just as well as saying all the words together.  In fact, saying each part of the coordinate individually will allow the grid time to show visual aids for picking out the coordinate you want.  
+The grid will appear in Phonetic Mode.  Phonetic Mode loads whatever phonetic alphabed you have and uses it to lable rows.  When you select a row, it will use your phonetic alphabet to lable the columns.  As a result you do not need to remember the phonetic alphabet to use this mouse because it will appear on screen for you.  
 
 	2 Cap Bat
 
-This will select the second block, make the large number two disappear, and remove the color overlay to show that this block is the actively selected block. `Cap` will select row C.  A red row will appear with all of the letters in row c. `Bad` This will select column 'd' and move the mouse pointer to coordinate '2 C B'
+This will select the second block, make the large number two disappear, and remove the color overlay to show that this block is the actively selected block. `Cap` will select row C.  A red row will appear with all of the letters in row cap. `Bat` This will select column 'bat' and move the mouse pointer to coordinate '2 C B'
 
 	`touch` 
 	
@@ -74,7 +74,8 @@ If frame mode does not suit you, there are two other modes that can be used to s
 
 `checker grid` turns on checker mode, which overlays the coordiantes in a checker pattern. This can be visually confusing, but it splits the difference between being able to immediately see the coordinate and being able to see the contents of your screen.  
 `full grid` shows every possible coordinate. 
-`frame grid` switches back to the default frame mode.
+`frame grid` switches to frame mode, which is just like phonetic mode except with individual letters labeling the rows and columns instead of full phonetic words.  
+`phonetic mode` switch to phonetic mode.  
 
 # Grid Visibility
 
