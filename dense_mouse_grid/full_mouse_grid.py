@@ -83,6 +83,14 @@ setting_label_transparency = mod.setting(
     desc="sets the transparency of the labels",
 )
 
+dense_grid_startup_mode = mod.setting(
+    "full_mouse_grid_startup_mode",
+    type=str,
+    default="phonetic",
+    desc="determines which mode the grid will be in each time the grid is reopened.",
+)
+
+
 
 ctx = Context()
 
@@ -437,7 +445,7 @@ class MouseSnapMillion:
                     if self.pattern == "frame" or self.pattern == "phonetic":
                         if ( row % 26 == 0) or (col % 26 == 0):
                             skip_it = False
-                        else:
+                        else:5*
                             skip_it = True
 
                     #draw the highlighter

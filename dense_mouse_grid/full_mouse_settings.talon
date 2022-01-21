@@ -38,6 +38,10 @@ settings():
 
     user.full_mouse_grid_label_transparency = "0x77"
 
+    ## mode settings: each time you close and reopen the grid determines it reverts to the following mode: There are four modes: "phonetic" , "frame", "checkers" , and "full".  
+
+    user.full_mouse_grid_startup_mode = "phonetic"
+
     ## ------ label settings
 
     # This feature is unimplemented.  While it is possible to set this setting to any random string of characters you want, doing it with anything but letters will make the letter commands not work. 

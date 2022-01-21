@@ -81,7 +81,7 @@ If frame mode does not suit you, there are two other modes that can be used to s
 
 The Grid can be made more transparent with the following four commands. 
 
-`lighter background` makes the translucent background more transparent. `darker background` makes it darker. 
+`lighter background` makes the translucent background more transparent. `darker background` makes it darpker. 
 `lighter letters` makes the translucent letters more translucent. `darker letters` makes them more opaque and visible.
 
 # Grid Color 

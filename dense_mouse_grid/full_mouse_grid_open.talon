@@ -21,6 +21,10 @@ tag: user.full_mouse_grid_showing
     user.full_grid_input_partial(letter_1)
     user.full_grid_input_partial(letter_2)
 
+<number> <user.letter>: 
+        user.full_grid_input_partial(number)
+        user.full_grid_input_partial(letter)
+
 ^<number>$:
     # Say a number to select a number block. 
     user.full_grid_input_partial(number)
@@ -32,7 +36,6 @@ tag: user.full_mouse_grid_showing
 ^<user.letter>$:
     #input a single letter. Depeing in where you are in the command sequence it will select either a row or a column.
     user.full_grid_input_partial(letter)
-
 
 [dense] grid close:
     # close the grid. 
@@ -78,18 +81,4 @@ smaller grid:
     # Make the grib blocks smaller. 
     user.full_grid_adjust_size(-5)
 
-# alphabet rulers:
-#    user.full_grid_rulers_toggle()
-
-#<user.letter> <user.letter> <number> #{user.mg_point_of_compass}:
-#    user.full_grid_input_partial(number)
-#    user.full_grid_input_partial(letter_1)
-#    user.full_grid_input_partial(letter_2)
-
-    # user.full_grid_close()
-
-#<user.letter> <user.letter> {user.mg_point_of_compass}:
-#    user.full_grid_input_partial(letter_1)
-#    user.full_grid_input_partial(letter_2)
-#    user.full_grid_close()
 
