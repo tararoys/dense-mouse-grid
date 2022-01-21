@@ -9,7 +9,7 @@ dense [mouse] grid screen <number>:
     user.full_grid_select_screen(number)
     user.full_grid_activate()
 
-alphabet [mouse] grid win:
+dense [mouse] grid win:
     user.full_grid_place_window()
     user.full_grid_activate()
 
