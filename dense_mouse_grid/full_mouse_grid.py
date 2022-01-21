@@ -264,7 +264,7 @@ class MouseSnapMillion:
 
         self.rulers = False
         self.checkers = False
-        self.pattern = "frame"
+        self.pattern = "phonetic"
 
         self.input_so_far = ""
 
@@ -434,7 +434,7 @@ class MouseSnapMillion:
                         else:
                             skip_it = False
 
-                    if self.pattern == "frame":
+                    if self.pattern == "frame" or self.pattern == "phonetic":
                         if ( row % 26 == 0) or (col % 26 == 0):
                             skip_it = False
                         else:
@@ -487,9 +487,38 @@ class MouseSnapMillion:
                     )  #I think this re-centers the point?  
                     background_rect = background_rect.inset(-4) 
                 elif(letters[col % len(letters)] == 'a'):
-                    
-                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(letters)]}" #gets the phonetic words currently being used
+                    text_string = f"{letters[row % len(letters)]}"
+
+                    canvas.paint.textsize = int(self.field_size * 3 / 5)
+                    #canvas.paint.textsize = int(field_size*4/5)
+                    text_rect = canvas.paint.measure_text(text_string)[1] #10find out how many characters long the text is?
+
+                    background_rect = text_rect.copy()
+                    background_rect.center = Point2d(
+                        col * self.field_size + self.field_size / 2,
+                        row * self.field_size + self.field_size / 2,
+                    )  #I think this re-centers the point?  
+                    background_rect = background_rect.inset(-4)
+
+            elif self.pattern == "phonetic":
+                if(letters[row % len(letters)] == 'a'):
+
+                    text_string = f"{letters[col % len(letters)]}" #gets a letter from the alphabet of the form 'ab' or 'DA'
                     # this the measure text is the box around the text.  
+                    canvas.paint.textsize = int(self.field_size * 3 / 5)
+                    #canvas.paint.textsize = int(field_size*4/5)
+                    text_rect = canvas.paint.measure_text(text_string)[1] #find out how many characters long the text is?
+                    background_rect = text_rect.copy()
+                    background_rect.center = Point2d(
+                        col * self.field_size + self.field_size / 2,
+                        row * self.field_size + self.field_size / 2,
+                    )  #I think this re-centers the point?  
+                    background_rect = background_rect.inset(-4) 
+                elif(letters[col % len(letters)] == 'a'):
+                    
+
+                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(letters)]}" #gets the phonetic words currently being used
+                    
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     #canvas.paint.textsize = int(field_size*4/5)
                     text_rect = canvas.paint.measure_text(text_string)[1] #10find out how many characters long the text is?
@@ -522,7 +551,6 @@ class MouseSnapMillion:
                 phonetic_word = list(registry.lists['user.letter'][0].keys())[col%len(letters)]
                 letter_list = list(phonetic_word)
                 for index, letter in enumerate(letter_list):
-                    print(letter)
                     if index is 0: 
                         canvas.paint.color = setting_row_highlighter.get() + hx(self.label_transparency) #check if someone has said a letter and highlight a row, or check if two letters have been said and highlight a column
             #colors it the ordinary background. 
@@ -547,7 +575,7 @@ class MouseSnapMillion:
                             row * self.field_size + (self.field_size / 2 + text_rect.height / 2) * (index + 1)
                         )
           
-                    elif self.pattern == 'frame':
+                    elif self.pattern == 'phonetic':
                         canvas.paint.color = setting_letters_background_color.get() + hx(self.label_transparency)
                         text_string = f"{letter}" # gets a letter from the alphabet of the form 'ab' or 'DA'
                 # this the measure text is the box around the text.  
@@ -696,6 +724,11 @@ class MouseSnapMillion:
         if self.mcanvas:
             self.mcanvas.freeze()
 
+    def turn_on_phonetic(self):
+        self.pattern = "phonetic"
+        if self.mcanvas:
+            self.mcanvas.freeze()
+
 
     def toggle_rulers(self):
         self.rulers = not self.rulers
@@ -777,6 +810,10 @@ class GridActions:
     def full_grid_full():
         """toggle full mouse grid on"""
         mg.turn_on_full()
+
+    def full_grid_phonetic():
+        """toggle phonetic mouse grid on"""
+        mg.turn_on_phonetic()
 
     def full_grid_rulers_toggle():
         """Show or hide rulers all around the window"""

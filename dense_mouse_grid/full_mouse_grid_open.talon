@@ -46,6 +46,10 @@ frame grid:
     # change the overlay pattern to a pattern where it is overlaid with frames.
     user.full_grid_frame()
 
+phonetic grid: 
+    # provides onscreen phonetic alphabet in rows and columns to make it so one does not have to remember the talon phonetic alphabet
+    user.full_grid_phonetic()
+
 full grid:
     # change the overlay pattern to overlay the screen with every possible number-letter-letter combination 
    user.full_grid_full()
