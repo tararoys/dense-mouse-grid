@@ -322,7 +322,6 @@ class MouseSnapMillion:
 
     def hide(self):
 
-
         self.saved_label_transparency = self.label_transparency 
         self.saved_bg_transparency = self.bg_transparency
 
@@ -769,14 +768,12 @@ class MouseSnapMillion:
         if self.mcanvas:
             self.mcanvas.freeze()
 
-
     def toggle_rulers(self):
         self.rulers = not self.rulers
         if self.mcanvas:
             self.mcanvas.freeze()
 
 mg = MouseSnapMillion()
-
 
 def full_mouse_grid_mode_enable():
     actions.mode.enable("user.full_mouse_grid")
@@ -785,9 +782,6 @@ def full_mouse_grid_mode_enable():
 def full_mouse_grid_mode_disable():
     actions.mode.disable("user.full_mouse_grid")
     actions.mode.enable("command")
-
-
-
 
 
 

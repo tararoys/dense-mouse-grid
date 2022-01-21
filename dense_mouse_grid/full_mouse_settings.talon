@@ -4,20 +4,22 @@ settings():
 
     ## color settings
 
+    #sets the color of the small letters
+    user.full_mouse_grid_small_letters_color = "ffff55"
+
     #set the background color of the small letters in the full mouse grid
     user.full_mouse_grid_letters_background_color = "000000"
     
     #set the color of the of the highlighted row
-    user.full_mouse_grid_row_highlighter = "990000"
+    user.full_mouse_grid_row_highlighter = "991100"
     
     #sets the color of the large number label in the superblock
     user.full_mouse_grid_large_number_color ="00ff00"
     
-    #sets the color of the small letters label in the superblock
-    user.full_mouse_grid_small_letters_color = "ffff55"
+
     
     #sets the background color of the superblock
-    user.full_mouse_grid_superblock_background_color = "990000"
+    user.full_mouse_grid_superblock_background_color = "440000"
     
     #sets the stroke color of the superblock (Also known as the oudline color, for those of you who are not vector graphics artists)
     user.full_mouse_grid_superblock_stroke_color = "ffffff"
@@ -32,20 +34,15 @@ settings():
 
     #sets the transparecny of the large grid squares
 
-    user.full_mouse_grid_superblock_transparency = "0x44"
+    user.full_mouse_grid_superblock_transparency = "0x77"
 
     ##sets the transparency of the small blocks.
 
-    user.full_mouse_grid_label_transparency = "0x77"
+    user.full_mouse_grid_label_transparency = "0x44"
 
     ## mode settings: each time you close and reopen the grid determines it reverts to the following mode: There are four modes: "phonetic" , "frame", "checkers" , and "full".  
 
     user.full_mouse_grid_startup_mode = "phonetic"
 
-    ## ------ label settings
-
-    # This feature is unimplemented.  While it is possible to set this setting to any random string of characters you want, doing it with anything but letters will make the letter commands not work. 
-
-    # user.interior_block_coordinate_characters = "abcdefghijklmnopqrstuvwxyz"
 
 
