@@ -445,7 +445,7 @@ class MouseSnapMillion:
                     if self.pattern == "frame" or self.pattern == "phonetic":
                         if ( row % 26 == 0) or (col % 26 == 0):
                             skip_it = False
-                        else:5*
+                        else:
                             skip_it = True
 
                     #draw the highlighter
