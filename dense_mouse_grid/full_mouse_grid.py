@@ -530,7 +530,7 @@ class MouseSnapMillion:
                     )  #I think this re-centers the point?  
                     background_rect = background_rect.inset(-4) 
 
-            if not (self.input_so_far.startswith(letters[row % len(letters)]) or not
+            if not (self.input_so_far.startswith(letters[row % len(letters)]) or
                     len(self.input_so_far) > 1 and self.input_so_far.endswith(letters[col % len(letters)])):
                 canvas.paint.color = setting_letters_background_color.get() + hx(self.label_transparency)
                 canvas.paint.style = Paint.Style.FILL
