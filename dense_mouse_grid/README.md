@@ -11,7 +11,7 @@ This is the "dense mouse grid". It fills the screen with fields that can be reac
 
 ![image](https://user-images.githubusercontent.com/1163925/130808333-219a48b3-650c-4d4c-9a99-d9909011132d.png)
 
-![Video Demonstration of Playing Dominion Using The Dense Mouse Grid](https://youtu.be/ookc134jPNQ)
+![Video Demonstration of the Dense Mouse Grid](https://youtu.be/d-1BTl72M_s )
 
 
 
