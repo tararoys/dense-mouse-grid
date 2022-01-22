@@ -90,6 +90,12 @@ dense_grid_startup_mode = mod.setting(
     desc="determines which mode the grid will be in each time the grid is reopened.",
 )
 
+setting_dense_grid_font = mod.setting(
+    "full_mouse_grid_font",
+    type=str,
+    default="arial rounded mt",
+    desc="determines the default font",
+)
 
 
 ctx = Context()
@@ -240,6 +246,8 @@ class MouseSnapMillion:
         if rect is None and screen_num is not None:
             screen = screens[screen_num % len(screens)]
             rect = screen.rect
+
+
 
         # rect determines which screen to draw on. 
         # if there is no rectangle to draw on canvas
@@ -461,6 +469,8 @@ class MouseSnapMillion:
 
             canvas.paint.text_align = canvas.paint.TextAlign.CENTER
             canvas.paint.textsize = 17
+            canvas.paint.typeface = setting_dense_grid_font.get()
+            #canvas.paint.typeface = "arial rounded mt"
 
             skip_it = False
 
@@ -721,8 +731,6 @@ class MouseSnapMillion:
             self.mcanvas.freeze()
 
     def jump(self, spoken_letters, number = -1, compasspoint = None):
-
-
         
         base_rect = self.superblocks[number].copy()
         base_rect.x += self.rect.x
@@ -783,23 +791,29 @@ def full_mouse_grid_mode_disable():
     actions.mode.disable("user.full_mouse_grid")
     actions.mode.enable("command")
 
-
-
 @mod.action_class
 class GridActions:
     def full_grid_activate():
         """Show mouse grid"""
+        
+        #rect = screen.rect
         if mg.mcanvas == None:
             print("setting up")
             mg.setup()
+        elif mg.rect != ui.screens()[0].rect:
+            mg.setup()
+
         mg.show()
+
         ctx.tags = ["user.full_mouse_grid_showing"]
         print("==== SHOWING GRID NAO ====")
-        #full_mouse_grid_mode_enable()
 
     def full_grid_place_window():
         """Places the grid on the currently active window"""
-        mg.setup(rect=ui.active_window().rect)
+        if mg.mcanvas == None: 
+            mg.setup(rect=ui.active_window().rect)
+        elif mg.rect == ui.screens()[0].rect:
+            mg.setup(rect=ui.active_window().rect)
         mg.show()
         ctx.tags = ["user.full_mouse_grid_showing"]
         print("==== SHOWING GRID NAO ====")
@@ -807,9 +821,15 @@ class GridActions:
 
     def full_grid_select_screen(screen: int):
         """Brings up mouse grid"""
-        print(mg.mcanvas)
-        mg.setup(screen_num=screen - 1)
+
+        if mg.mcanvas == None:
+            print("setting up")
+            mg.setup(screen_num=screen - 1)
+        elif mg.rect != ui.screens()[screen_num-1].rect:
+            mg.setup()
+
         mg.show()
+
         ctx.tags = ["user.full_mouse_grid_showing"]
         print("==== SHOWING GRID NAO Screen ====")
         #full_mouse_grid_mode_enable()
