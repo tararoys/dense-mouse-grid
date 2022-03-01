@@ -247,8 +247,6 @@ class MouseSnapMillion:
             screen = screens[screen_num % len(screens)]
             rect = screen.rect
 
-
-
         # rect determines which screen to draw on. 
         # if there is no rectangle to draw on canvas
             # get the first screen
@@ -812,7 +810,7 @@ class GridActions:
         """Places the grid on the currently active window"""
         if mg.mcanvas == None: 
             mg.setup(rect=ui.active_window().rect)
-        elif mg.rect == ui.screens()[0].rect:
+        else:
             mg.setup(rect=ui.active_window().rect)
         mg.show()
         ctx.tags = ["user.full_mouse_grid_showing"]
@@ -821,12 +819,13 @@ class GridActions:
 
     def full_grid_select_screen(screen: int):
         """Brings up mouse grid"""
-
+        
+        screen_num = screen
         if mg.mcanvas == None:
             print("setting up")
             mg.setup(screen_num=screen - 1)
         elif mg.rect != ui.screens()[screen_num-1].rect:
-            mg.setup()
+            mg.setup(rect = ui.screens()[screen_num-1].rect)
 
         mg.show()
 
@@ -903,3 +902,5 @@ class GridActions:
         """This command is for if you chose the wrong row and you want to choose a different row before choosing a column"""
         mg.input_so_far = ""
         mg.add_partial_input(str(letter))
+
+

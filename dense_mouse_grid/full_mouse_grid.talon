@@ -12,4 +12,4 @@ dense [mouse] grid win:
     user.full_grid_close()
     user.full_grid_place_window()
 
-   
+ 
