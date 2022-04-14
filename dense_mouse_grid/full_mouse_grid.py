@@ -894,7 +894,7 @@ class GridActions:
         mg.adjust_field_size(amount)
 
 
-    def full_grid_input_partial(letter: str):
+    def full_grid_input_partial(letter: Union[str,int]):
         """Input one letter to highlight a row or column"""
         mg.add_partial_input(str(letter))
 
