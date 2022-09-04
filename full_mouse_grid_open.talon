@@ -40,42 +40,42 @@ tag: user.full_mouse_grid_showing
     # Close the grid.
     user.full_grid_close()
 
-checker grid:
+grid checker:
     # Change the overlay pattern to a checkerboard pattern.
     user.full_grid_checkers()
 
-frame grid:
+grid frame:
     # Change the overlay pattern to a pattern where it is overlaid with frames.
     user.full_grid_frame()
 
-phonetic grid:
+grid phonetic:
     # Provides onscreen phonetic alphabet in rows and columns to make it so one does not have to remember the talon phonetic alphabet
     user.full_grid_phonetic()
 
-full grid:
+grid full:
     # Change the overlay pattern to overlay the screen with every possible number-letter-letter combination
     user.full_grid_full()
 
-darker letters:
-    # Make the small letter labels more visible.
-    user.full_grid_adjust_label_transparency(50)
-
-lighter letters:
-    # Make the small letter labels less visible.
-    user.full_grid_adjust_label_transparency(-50)
-
-darker background:
-    # Make the large number blocks more visible.
-    user.full_grid_adjust_bg_transparency(20)
-
-lighter background:
-    # Make the large number blocks less visible.
-    user.full_grid_adjust_bg_transparency(-20)
-
-bigger grid:
+grid (bigger | larger):
     # Make the grid blocks larger.
     user.full_grid_adjust_size(5)
 
-smaller grid:
+grid smaller:
     # Make the grib blocks smaller.
     user.full_grid_adjust_size(-5)
+
+letters darker:
+    # Make the small letter labels more visible.
+    user.full_grid_adjust_label_transparency(50)
+
+letters lighter:
+    # Make the small letter labels less visible.
+    user.full_grid_adjust_label_transparency(-50)
+
+background darker:
+    # Make the large number blocks more visible.
+    user.full_grid_adjust_bg_transparency(20)
+
+background lighter:
+    # Make the large number blocks less visible.
+    user.full_grid_adjust_bg_transparency(-20)
