@@ -115,7 +115,8 @@ ctx.matches = r"""
 tag: user.full_mouse_grid_enabled
 """
 
-letters = string.ascii_lowercase  ## where the letters come from.  :0#
+# collect all lowercase letters a-z
+letters = string.ascii_lowercase
 
 
 class MouseSnapMillion:
@@ -148,6 +149,8 @@ class MouseSnapMillion:
 
         self.input_so_far = ""
 
+        self.location_map = {}
+
     def add_partial_input(self, letter: str):
 
         # this logic swaps around which superblock is selected.
@@ -159,15 +162,15 @@ class MouseSnapMillion:
                 print("updating graphics")
             return
 
-        # this logic collects letters.  you can only collect up to two letters.
+        # this logic collects letters. you can only collect up to two letters.
         self.input_so_far += letter
         print("input so far: " + self.input_so_far)
         if len(self.input_so_far) >= 2:
             self.jump(self.input_so_far, self.default_superblock)
             self.input_so_far = ""
 
-            # this next line fixes a bug where a tag was not deactivated and a mode was not being
-            # switched properly.  However, I think this stuff might be best properly stached in the
+            # This next line fixes a bug where a tag was not deactivated and a mode was not being
+            # switched properly. However, I think this stuff might be best properly stached in the
             # object's close functionality, because it is triggered when you close the grid.
 
             # actions.user.full_grid_close()
@@ -241,7 +244,6 @@ class MouseSnapMillion:
             except Exception:
                 rect = None
 
-        #
         if rect is None and screen_num is not None:
             screen = screens[screen_num % len(screens)]
             rect = screen.rect
@@ -639,7 +641,7 @@ class MouseSnapMillion:
                     row * self.field_size + self.field_size / 2 + text_rect.height / 2,
                 )
 
-            # sees if the background schould be highlighted
+            # sees if the background should be highlighted
             elif (
                 self.input_so_far.startswith(letters[row % len(letters)])
                 or len(self.input_so_far) > 1
@@ -757,6 +759,16 @@ class MouseSnapMillion:
                     background_rect.y = y_pos
                     canvas.draw_text(text_string, background_rect.x, background_rect.y)
 
+        def draw_location_names():
+            canvas.paint.text_align = canvas.paint.TextAlign.CENTER
+            canvas.paint.textsize = 17
+            canvas.paint.color = setting_small_letters_color.get() + hx(
+                self.label_transparency
+            )
+
+            for label, location in self.location_map.items():
+                canvas.draw_text(label, location.x, location.y)
+
         # paint.color = "00ff004f"
         # draw_crosses()
         paint.color = "ffffffff"
@@ -769,24 +781,38 @@ class MouseSnapMillion:
         if self.rulers:
             draw_rulers()
 
+        draw_location_names()
         # draw_grid(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
 
         # paint.textsize += 12 - self.count * 3
         # draw_text(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
 
-    def jump(self, spoken_letters, number=-1):
+    def map_new_location(self, spoken_letters, location_name):
+        self.location_map[location_name] = self.get_label_position(
+            spoken_letters, number=self.default_superblock, relative=True
+        )
 
+        if self.mcanvas:
+            self.mcanvas.freeze()
+
+    def get_label_position(self, spoken_letters, number=-1, relative=False):
         base_rect = self.superblocks[number].copy()
-        base_rect.x += self.rect.x
-        base_rect.y += self.rect.y
+
+        if not relative:
+            base_rect.x += self.rect.x
+            base_rect.y += self.rect.y
 
         x_idx = letters.index(spoken_letters[1])
         y_idx = letters.index(spoken_letters[0])
 
-        ctrl.mouse_move(
+        return Point2d(
             base_rect.x + x_idx * self.field_size + self.field_size / 2,
             base_rect.y + y_idx * self.field_size + self.field_size / 2,
         )
+
+    def jump(self, spoken_letters, number=-1):
+        point = self.get_label_position(spoken_letters, number=number)
+        ctrl.mouse_move(point.x, point.y)
 
         self.input_so_far = ""
 
@@ -929,3 +955,7 @@ class GridActions:
         """This command is for if you chose the wrong row and you want to choose a different row before choosing a column"""
         mg.input_so_far = ""
         mg.add_partial_input(str(letter))
+
+    def full_grid_map_location(letter1: str, letter2: str, location_name: str):
+        """Map a new location"""
+        mg.map_new_location(letter1 + letter2, location_name)

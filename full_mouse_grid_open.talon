@@ -2,20 +2,23 @@ tag: user.full_mouse_grid_showing
 -
 
 <user.letter> <user.letter> <number>:
-    # Say a letter to choose a row, say a second letter to choose a column, and say a number to choose the numbered block.  Example: "air bat 2"
+    # Say a letter to choose a row, say a second letter to choose a column, and say a number to
+    # choose the numbered block.  Example: "air bat 2"
     user.full_grid_input_partial(number)
     user.full_grid_input_partial(letter_1)
     user.full_grid_input_partial(letter_2)
 
 
 <user.letter> <user.letter>:
-    # Using the currently selected number block, say a letter to choose a row and say a second letter to choose a column. Example: "bat cap"
+    # Using the currently selected number block, say a letter to choose a row and say a second
+    # letter to choose a column. Example: "bat cap"
     user.full_grid_input_partial(letter_1)
     user.full_grid_input_partial(letter_2)
 
 
 <number> <user.letter> <user.letter>:
-    # Say a number to select a number block, say a letter to select a row, and say a second leter to select a column. Example: "1 bat cap"
+    # Say a number to select a number block, say a letter to select a row, and say a second leter to
+    # select a column. Example: "1 bat cap"
     user.full_grid_input_partial(number)
     user.full_grid_input_partial(letter_1)
     user.full_grid_input_partial(letter_2)
@@ -29,11 +32,13 @@ tag: user.full_mouse_grid_showing
     user.full_grid_input_partial(number)
 
 ^horizontal <user.letter>$:
-    # If you already have a row selected, saying 'horizontal' followed by a letter will select a new horizontal row.
+    # If you already have a row selected, saying 'horizontal' followed by a letter will select a new
+    # horizontal row.
     user.full_grid_input_horizontal(letter)
 
 ^<user.letter>$:
-    # Input a single letter. Depeing in where you are in the command sequence it will select either a row or a column.
+    # Input a single letter. Depeing in where you are in the command sequence it will select either
+    # a row or a column.
     user.full_grid_input_partial(letter)
 
 [dense] grid close:
@@ -49,7 +54,8 @@ grid frame:
     user.full_grid_frame()
 
 grid phonetic:
-    # Provides onscreen phonetic alphabet in rows and columns to make it so one does not have to remember the talon phonetic alphabet
+    # Provides onscreen phonetic alphabet in rows and columns to make it so one does not have to
+    # remember the talon phonetic alphabet
     user.full_grid_phonetic()
 
 grid full:
@@ -79,3 +85,6 @@ background darker:
 background lighter:
     # Make the large number blocks less visible.
     user.full_grid_adjust_bg_transparency(-20)
+
+map <user.letter> <user.letter> <user.text>:
+    user.full_grid_map_location(letter_1, letter_2, text)
