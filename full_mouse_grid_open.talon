@@ -1,16 +1,15 @@
 tag: user.full_mouse_grid_showing
-
 -
 
 <user.letter> <user.letter> <number>:
-    # say a letter to choose a row, say a second letter to choose a column, and say a number to choose the numbered block.  Example: "air bat 2"
+    # Say a letter to choose a row, say a second letter to choose a column, and say a number to choose the numbered block.  Example: "air bat 2"
     user.full_grid_input_partial(number)
     user.full_grid_input_partial(letter_1)
     user.full_grid_input_partial(letter_2)
 
 
 <user.letter> <user.letter>:
-    # using the currently selected number block, say a letter to choose a row and say a second letter to choose a column. Example: "bat cap"
+    # Using the currently selected number block, say a letter to choose a row and say a second letter to choose a column. Example: "bat cap"
     user.full_grid_input_partial(letter_1)
     user.full_grid_input_partial(letter_2)
 
@@ -21,41 +20,41 @@ tag: user.full_mouse_grid_showing
     user.full_grid_input_partial(letter_1)
     user.full_grid_input_partial(letter_2)
 
-<number> <user.letter>: 
-        user.full_grid_input_partial(number)
-        user.full_grid_input_partial(letter)
+<number> <user.letter>:
+    user.full_grid_input_partial(number)
+    user.full_grid_input_partial(letter)
 
 ^<number>$:
-    # Say a number to select a number block. 
+    # Say a number to select a number block.
     user.full_grid_input_partial(number)
 
 ^horizontal <user.letter>$:
-    #If you already have a row selected, saying 'horizontal' followed by a letter will select a new horizontal row.
+    # If you already have a row selected, saying 'horizontal' followed by a letter will select a new horizontal row.
     user.full_grid_input_horizontal(letter)
 
 ^<user.letter>$:
-    #input a single letter. Depeing in where you are in the command sequence it will select either a row or a column.
+    # Input a single letter. Depeing in where you are in the command sequence it will select either a row or a column.
     user.full_grid_input_partial(letter)
 
 [dense] grid close:
-    # close the grid. 
+    # Close the grid.
     user.full_grid_close()
 
 checker grid:
-    # change the overlay pattern to a checkerboard pattern.
+    # Change the overlay pattern to a checkerboard pattern.
     user.full_grid_checkers()
 
 frame grid:
-    # change the overlay pattern to a pattern where it is overlaid with frames.
+    # Change the overlay pattern to a pattern where it is overlaid with frames.
     user.full_grid_frame()
 
-phonetic grid: 
-    # provides onscreen phonetic alphabet in rows and columns to make it so one does not have to remember the talon phonetic alphabet
+phonetic grid:
+    # Provides onscreen phonetic alphabet in rows and columns to make it so one does not have to remember the talon phonetic alphabet
     user.full_grid_phonetic()
 
 full grid:
-    # change the overlay pattern to overlay the screen with every possible number-letter-letter combination 
-   user.full_grid_full()
+    # Change the overlay pattern to overlay the screen with every possible number-letter-letter combination
+    user.full_grid_full()
 
 darker letters:
     # Make the small letter labels more visible.
@@ -66,19 +65,17 @@ lighter letters:
     user.full_grid_adjust_label_transparency(-50)
 
 darker background:
-    # Make the large number blocks more visible.  
+    # Make the large number blocks more visible.
     user.full_grid_adjust_bg_transparency(20)
 
 lighter background:
-    #Make the large number blocks less visible. 
+    # Make the large number blocks less visible.
     user.full_grid_adjust_bg_transparency(-20)
 
-bigger grid: 
+bigger grid:
     # Make the grid blocks larger.
     user.full_grid_adjust_size(5)
 
-smaller grid: 
-    # Make the grib blocks smaller. 
+smaller grid:
+    # Make the grib blocks smaller.
     user.full_grid_adjust_size(-5)
-
-
