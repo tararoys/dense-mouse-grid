@@ -6,7 +6,6 @@ from talon import (
     ctrl,
     Module,
     registry,
-    settings,
     ui,
 )
 from talon.skia import Paint, Rect
@@ -116,49 +115,6 @@ ctx.matches = r"""
 tag: user.full_mouse_grid_enabled
 """
 
-# stolen from the race car, this should probably go in a central spot somewhere
-direction_name_steps = [
-    "east",
-    "east south east",
-    "south east",
-    "south south east",
-    "south",
-    "south south west",
-    "south west",
-    "west south west",
-    "west",
-    "west north west",
-    "north west",
-    "north north west",
-    "north",
-    "north north east",
-    "north east",
-    "east north east",
-]
-
-direction_vectors = [Point2d(0, 0) for i in range(len(direction_name_steps))]
-
-direction_vectors[0] = Point2d(1, 0)
-direction_vectors[4] = Point2d(0, 1)
-direction_vectors[8] = Point2d(-1, 0)
-direction_vectors[12] = Point2d(0, -1)
-
-for i in [2, 6, 10, 14]:
-    direction_vectors[i] = (
-        direction_vectors[(i - 2) % len(direction_vectors)]
-        + direction_vectors[(i + 2) % len(direction_vectors)]
-    )
-
-for i in [1, 3, 5, 7, 9, 11, 13, 15]:
-    direction_vectors[i] = (
-        direction_vectors[(i - 1) % len(direction_vectors)]
-        + direction_vectors[(i + 1) % len(direction_vectors)]
-    ) / 2
-
-ctx.lists["self.mg_point_of_compass"] = direction_name_steps
-
-print(ctx.lists["self.mg_point_of_compass"])
-
 letters = string.ascii_lowercase  ## where the letters come from.  :0#
 
 
@@ -210,7 +166,9 @@ class MouseSnapMillion:
             self.jump(self.input_so_far, self.default_superblock)
             self.input_so_far = ""
 
-            # this next line fixes a bug where a tag was not deactivated and a mode was not being switched properly.  However, I think this stuff might be best properly stached in the object's close functionality, because it is triggered when you close the grid.
+            # this next line fixes a bug where a tag was not deactivated and a mode was not being
+            # switched properly.  However, I think this stuff might be best properly stached in the
+            # object's close functionality, because it is triggered when you close the grid.
 
             # actions.user.full_grid_close()
 
@@ -259,7 +217,8 @@ class MouseSnapMillion:
         self.field_size += amount
         if self.field_size < 5:
             self.field_size = 5
-        # columns and rows depend on field size and window size, but it doesn't recalculate automatically. I should fix that.
+        # columns and rows depend on field size and window size, but it doesn't recalculate
+        # automatically. I should fix that.
 
         self.columns = int(self.rect.width // self.field_size)
         self.rows = int(self.rect.height // self.field_size)
@@ -307,7 +266,8 @@ class MouseSnapMillion:
         # set the field size
         self.field_size = int(setting_field_size.get())
 
-        # use the field size to calculate how many rows and how many columns there are set how many columns and how may rows there are.
+        # use the field size to calculate how many rows and how many columns there are set how many
+        # columns and how may rows there are.
 
         self.columns = int(self.rect.width // self.field_size)
         self.rows = int(self.rect.height // self.field_size)
@@ -575,7 +535,8 @@ class MouseSnapMillion:
 
         def draw_letters(row, col):
             # get letters
-            text_string = f"{letters[row % len(letters)]}{letters[col % len(letters)]}"  # gets a letter from the alphabet of the form 'ab' or 'DA'
+            # gets a letter from the alphabet of the form 'ab' or 'DA'
+            text_string = f"{letters[row % len(letters)]}{letters[col % len(letters)]}"
             # this the measure text is the box around the text.
             canvas.paint.textsize = int(self.field_size * 3 / 5)
             # canvas.paint.textsize = int(field_size*4/5)
@@ -594,7 +555,8 @@ class MouseSnapMillion:
             if self.pattern == "frame":
                 if letters[row % len(letters)] == "a":
 
-                    text_string = f"{letters[col % len(letters)]}"  # gets a letter from the alphabet of the form 'ab' or 'DA'
+                    # gets a letter from the alphabet of the form 'ab' or 'DA'
+                    text_string = f"{letters[col % len(letters)]}"
                     # this the measure text is the box around the text.
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     # canvas.paint.textsize = int(field_size*4/5)
@@ -614,7 +576,7 @@ class MouseSnapMillion:
                     # canvas.paint.textsize = int(field_size*4/5)
                     text_rect = canvas.paint.measure_text(text_string)[
                         1
-                    ]  # 10find out how many characters long the text is?
+                    ]  # find out how many characters long the text is?
 
                     background_rect = text_rect.copy()
                     background_rect.center = Point2d(
@@ -626,7 +588,8 @@ class MouseSnapMillion:
             elif self.pattern == "phonetic":
                 if letters[row % len(letters)] == "a":
 
-                    text_string = f"{letters[col % len(letters)]}"  # gets a letter from the alphabet of the form 'ab' or 'DA'
+                    # gets a letter from the alphabet of the form 'ab' or 'DA'
+                    text_string = f"{letters[col % len(letters)]}"
                     # this the measure text is the box around the text.
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     # canvas.paint.textsize = int(field_size*4/5)
@@ -640,8 +603,8 @@ class MouseSnapMillion:
                     )  # I think this re-centers the point?
                     background_rect = background_rect.inset(-4)
                 elif letters[col % len(letters)] == "a":
-
-                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(letters)]}"  # gets the phonetic words currently being used
+                    # gets the phonetic words currently being used
+                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(letters)]}"
 
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     # canvas.paint.textsize = int(field_size*4/5)
@@ -692,7 +655,10 @@ class MouseSnapMillion:
                     if index == 0:
                         canvas.paint.color = setting_row_highlighter.get() + hx(
                             self.label_transparency
-                        )  # check if someone has said a letter and highlight a row, or check if two letters have been said and highlight a column
+                        )
+                        # check if someone has said a letter and highlight a row, or check if two
+                        # letters have been said and highlight a column
+
                         # colors it the ordinary background.
                         text_string = f"{letter}"  # gets a letter from the alphabet of the form 'ab' or 'DA'
                         # this the measure text is the box around the text.
@@ -728,7 +694,8 @@ class MouseSnapMillion:
                             setting_letters_background_color.get()
                             + hx(self.label_transparency)
                         )
-                        text_string = f"{letter}"  # gets a letter from the alphabet of the form 'ab' or 'DA'
+                        # gets a letter from the alphabet of the form 'ab' or 'DA'
+                        text_string = f"{letter}"
                         # this the measure text is the box around the text.
                         canvas.paint.textsize = int(self.field_size * 3 / 5)
                         # canvas.paint.textsize = int(field_size*4/5)
@@ -869,8 +836,8 @@ def full_mouse_grid_mode_disable():
 class GridActions:
     def full_grid_activate():
         """Show mouse grid"""
+        mg.close()
 
-        # rect = screen.rect
         if mg.mcanvas == None:
             print("setting up")
             mg.setup()
@@ -884,6 +851,8 @@ class GridActions:
 
     def full_grid_place_window():
         """Places the grid on the currently active window"""
+        mg.close()
+
         if mg.mcanvas == None:
             mg.setup(rect=ui.active_window().rect)
         else:
@@ -895,6 +864,7 @@ class GridActions:
 
     def full_grid_select_screen(screen: int):
         """Brings up mouse grid"""
+        mg.close()
 
         screen_num = screen
         if mg.mcanvas == None:
@@ -906,12 +876,11 @@ class GridActions:
         mg.show()
 
         ctx.tags = ["user.full_mouse_grid_showing"]
-        print("==== SHOWING GRID NAO Screen ====")
+        print("==== SHOWING GRID NAO ====")
         # full_mouse_grid_mode_enable()
 
     def full_grid_close():
         """Close the active grid"""
-        print(mg.mcanvas)
         ctx.tags = []
         mg.close()
 
@@ -927,11 +896,11 @@ class GridActions:
         mg.turn_on_frame()
 
     def full_grid_full():
-        """toggle full mouse grid on"""
+        """Toggle full mouse grid on"""
         mg.turn_on_full()
 
     def full_grid_phonetic():
-        """toggle phonetic mouse grid on"""
+        """Toggle phonetic mouse grid on"""
         mg.turn_on_phonetic()
 
     def full_grid_rulers_toggle():
@@ -949,7 +918,7 @@ class GridActions:
         return mg.label_transparency
 
     def full_grid_adjust_size(amount: int):
-        """increase or decrease size of everything"""
+        """Increase or decrease size of everything"""
         mg.adjust_field_size(amount)
 
     def full_grid_input_partial(letter: str):
