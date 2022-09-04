@@ -124,7 +124,6 @@ class MouseSnapMillion:
         self.screen = None
         self.rect = None
         self.history = []
-        self.img = None
         self.mcanvas = None
         self.active = False
         self.was_control_mouse_active = False
@@ -232,26 +231,22 @@ class MouseSnapMillion:
         if self.mcanvas:
             self.mcanvas.freeze()
 
-    def setup(self, *, rect: Rect = None, screen_num: int = None):
+    def setup(self, *, rect: Rect = None, screen_index: int = None):
         # get informaition on number and size of screens
-
         screens = ui.screens()
         # each if block here might set the rect to None to indicate failure
-        # rect is information on the height and width of the canvas.
+        # rect contains position, height, and width of the canvas
         if rect is not None:
             try:
                 screen = ui.screen_containing(*rect.center)
             except Exception:
                 rect = None
 
-        if rect is None and screen_num is not None:
-            screen = screens[screen_num % len(screens)]
+        if rect is None and screen_index is not None:
+            screen = screens[screen_index % len(screens)]
             rect = screen.rect
 
-        # rect determines which screen to draw on.
-        # if there is no rectangle to draw on canvas
-        # get the first screen
-        # set the rect to the area of the first screen.
+        # default the rect to the first screen
         if rect is None:
             screen = screens[0]
             rect = screen.rect
@@ -259,18 +254,13 @@ class MouseSnapMillion:
         # store the current rectangle we are drawing on
         self.rect = rect.copy()
 
-        # store the current screen we are drawing on.
+        # store the current screen we are drawing on
         self.screen = screen
-
-        # leftover code from the mousegrid, currently unused.
-        self.img = None
 
         # set the field size
         self.field_size = int(setting_field_size.get())
 
-        # use the field size to calculate how many rows and how many columns there are set how many
-        # columns and how may rows there are.
-
+        # use the field size to calculate how many rows and how many columns there are
         self.columns = int(self.rect.width // self.field_size)
         self.rows = int(self.rect.height // self.field_size)
 
@@ -287,10 +277,8 @@ class MouseSnapMillion:
         self.was_control_mouse_active = False
         self.was_zoom_mouse_active = False
 
-        ## This is messy stuff, but below this line it's all variables used as storage.
-
+        # set various default values
         self.superblocks = []
-
         self.default_superblock = 0
 
         self.rulers = False
@@ -299,13 +287,10 @@ class MouseSnapMillion:
 
         self.input_so_far = ""
 
-        # close the old canvas, if one exists, and open a new one.
+        # close the old canvas if one exists and open a new one
         if self.mcanvas is not None:
             self.mcanvas.close()
         self.mcanvas = canvas.Canvas.from_screen(screen)
-        if self.active:
-            self.mcanvas.register("draw", self.draw)
-            self.mcanvas.freeze()
 
     def show(self):
         if self.active:
@@ -325,29 +310,23 @@ class MouseSnapMillion:
         self.mcanvas.freeze()
         self.active = True
 
-        # actions.user.full_mouse_grid_help_overlay_show()
-
     def hide(self):
-
         self.saved_label_transparency = self.label_transparency
         self.saved_bg_transparency = self.bg_transparency
 
         self.bg_transparency = 0x00
         self.label_transparency = 0x00
-        if self.mcanvas:
-            self.mcanvas.freeze()
+
+        self.redraw()
 
     def close(self):
         if not self.active:
             return
         self.hide()
         self.mcanvas.unregister("draw", self.draw)
-        # self.mcanvas.close()
-        # self.mcanvas = None
-        self.img = None
+        self.mcanvas.close()
+        self.mcanvas = None
         self.input_so_far = ""
-
-        # actions.user.mouse_grid_help_overlay_close()
 
         self.active = False
 
@@ -358,6 +337,10 @@ class MouseSnapMillion:
 
         self.was_zoom_mouse_active = False
         self.was_control_mouse_active = False
+
+    def redraw(self):
+        if self.mcanvas:
+            self.mcanvas.freeze()
 
     def draw(self, canvas):
         paint = canvas.paint
@@ -848,62 +831,37 @@ class MouseSnapMillion:
 mg = MouseSnapMillion()
 
 
-def full_mouse_grid_mode_enable():
-    actions.mode.enable("user.full_mouse_grid")
-    actions.mode.disable("command")
-
-
-def full_mouse_grid_mode_disable():
-    actions.mode.disable("user.full_mouse_grid")
-    actions.mode.enable("command")
-
-
 @mod.action_class
 class GridActions:
     def full_grid_activate():
         """Show mouse grid"""
         mg.close()
-
-        if mg.mcanvas == None:
-            print("setting up")
-            mg.setup()
-        elif mg.rect != ui.screens()[0].rect:
-            mg.setup()
-
+        mg.setup(rect=ui.screens()[0].rect)
         mg.show()
 
         ctx.tags = ["user.full_mouse_grid_showing"]
-        print("==== SHOWING GRID NAO ====")
 
     def full_grid_place_window():
         """Places the grid on the currently active window"""
         mg.close()
-
-        if mg.mcanvas == None:
-            mg.setup(rect=ui.active_window().rect)
-        else:
-            mg.setup(rect=ui.active_window().rect)
+        mg.setup(rect=ui.active_window().rect)
         mg.show()
+
         ctx.tags = ["user.full_mouse_grid_showing"]
-        print("==== SHOWING GRID NAO ====")
-        # full_mouse_grid_mode_enable()
 
     def full_grid_select_screen(screen: int):
         """Brings up mouse grid"""
         mg.close()
 
-        screen_num = screen
+        screen_index = screen - 1
         if mg.mcanvas == None:
-            print("setting up")
-            mg.setup(screen_num=screen - 1)
-        elif mg.rect != ui.screens()[screen_num - 1].rect:
-            mg.setup(rect=ui.screens()[screen_num - 1].rect)
+            mg.setup(screen_index=screen_index)
+        elif mg.rect != ui.screens()[screen_index].rect:
+            mg.setup(rect=ui.screens()[screen_index].rect)
 
         mg.show()
 
         ctx.tags = ["user.full_mouse_grid_showing"]
-        print("==== SHOWING GRID NAO ====")
-        # full_mouse_grid_mode_enable()
 
     def full_grid_close():
         """Close the active grid"""
@@ -911,7 +869,6 @@ class GridActions:
         mg.close()
 
         print("==== NO MORE GRID FOR YOU MY FRIEND ====")
-        # full_mouse_grid_mode_disable()
 
     def full_grid_checkers():
         """Show or hide every other label box so more of the underlying screen content is visible"""
@@ -933,15 +890,13 @@ class GridActions:
         """Show or hide rulers all around the window"""
         mg.toggle_rulers()
 
-    def full_grid_adjust_bg_transparency(amount: int) -> int:
+    def full_grid_adjust_bg_transparency(amount: int):
         """Increase or decrease the opacity of the background of the full mouse grid (also returns new value)"""
         mg.adjust_bg_transparency(amount)
-        return mg.bg_transparency
 
-    def full_grid_adjust_label_transparency(amount: int) -> int:
+    def full_grid_adjust_label_transparency(amount: int):
         """Increase or decrease the opacity of the labels behind text for the full mouse grid (also returns new value)"""
         mg.adjust_label_transparency(amount)
-        return mg.label_transparency
 
     def full_grid_adjust_size(amount: int):
         """Increase or decrease size of everything"""

@@ -86,5 +86,8 @@ background lighter:
     # Make the large number blocks less visible.
     user.full_grid_adjust_bg_transparency(-20)
 
+rulers switch:
+    user.full_grid_rulers_toggle()
+
 map <user.letter> <user.letter> <user.text>:
     user.full_grid_map_location(letter_1, letter_2, text)
