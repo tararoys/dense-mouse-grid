@@ -1,6 +1,5 @@
 # Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily edited by Tara
 from talon import (
-    actions,
     canvas,
     Context,
     ctrl,
@@ -23,86 +22,83 @@ def hx(v: int) -> str:
 mod = Module()
 
 mod.tag(
-    "full_mouse_grid_showing",
-    desc="Tag indicates whether the full mouse grid is showing",
+    "flex_mouse_grid_showing",
+    desc="Tag indicates whether the flex mouse grid is showing",
 )
-mod.tag("full_mouse_grid_enabled", desc="Tag enables the full mouse grid commands.")
-mod.list("mg_point_of_compass", desc="point of compass for full mouse grid")
-
-mod.mode("full_mouse_grid", desc="indicate the full mouse grid is active")
+mod.tag("flex_mouse_grid_enabled", desc="Tag enables the flex mouse grid commands.")
 
 setting_letters_background_color = mod.setting(
-    "full_mouse_grid_letters_background_color",
+    "flex_mouse_grid_letters_background_color",
     type=str,
     default="000000",
-    desc="set the background color of the small letters in the full mouse grid",
+    desc="set the background color of the small letters in the flex mouse grid",
 )
 
 setting_row_highlighter = mod.setting(
-    "full_mouse_grid_row_highlighter",
+    "flex_mouse_grid_row_highlighter",
     type=str,
     default="ff0000",
     desc="set the color of the row to highlight",
 )
 
 setting_large_number_color = mod.setting(
-    "full_mouse_grid_large_number_color",
+    "flex_mouse_grid_large_number_color",
     type=str,
     default="00ffff",
     desc="sets the color of the large number label in the superblock",
 )
 
 setting_small_letters_color = mod.setting(
-    "full_mouse_grid_small_letters_color",
+    "flex_mouse_grid_small_letters_color",
     type=str,
     default="ffff55",
     desc="sets the color of the small letters label in the superblock",
 )
 
 setting_superblock_background_color = mod.setting(
-    "full_mouse_grid_superblock_background_color",
+    "flex_mouse_grid_superblock_background_color",
     type=str,
     default="ff55ff",
     desc="sets the background color of the superblock",
 )
 
 setting_superblock_stroke_color = mod.setting(
-    "full_mouse_grid_superblock_stroke_color",
+    "flex_mouse_grid_superblock_stroke_color",
     type=str,
     default="ffffff",
     desc="sets the background color of the superblock",
 )
 
 setting_field_size = mod.setting(
-    "full_mouse_grid_field_size",
+    "flex_mouse_grid_field_size",
     type=str,
     default="32",
     desc="sets the default size of the small grid blocks",
 )
 
 setting_superblock_transparency = mod.setting(
-    "full_mouse_grid_superblock_transparency",
+    "flex_mouse_grid_superblock_transparency",
     type=str,
     default="0x22",
     desc="sets the transparency of the superblocks",
 )
 
 setting_label_transparency = mod.setting(
-    "full_mouse_grid_label_transparency",
+    "flex_mouse_grid_label_transparency",
     type=str,
     default="0x99",
     desc="sets the transparency of the labels",
 )
 
 dense_grid_startup_mode = mod.setting(
-    "full_mouse_grid_startup_mode",
+    "flex_mouse_grid_startup_mode",
     type=str,
     default="phonetic",
     desc="determines which mode the grid will be in each time the grid is reopened.",
 )
 
 setting_dense_grid_font = mod.setting(
-    "full_mouse_grid_font",
+    "flex_mouse_grid_font",
     type=str,
     default="arial rounded mt",
     desc="determines the default font",
@@ -112,20 +108,21 @@ setting_dense_grid_font = mod.setting(
 ctx = Context()
 
 ctx.matches = r"""
-tag: user.full_mouse_grid_enabled
+tag: user.flex_mouse_grid_enabled
 """
 
 # collect all lowercase letters a-z
 letters = string.ascii_lowercase
 
 
-class MouseSnapMillion:
+class FlexMouseGrid:
     def __init__(self):
         self.screen = None
         self.rect = None
         self.history = []
         self.mcanvas = None
         self.active = False
+        self.visible = False
         self.was_control_mouse_active = False
         self.was_zoom_mouse_active = False
         self.columns = 0
@@ -140,43 +137,32 @@ class MouseSnapMillion:
 
         self.superblocks = []
 
-        self.default_superblock = 0
+        self.selected_superblock = 0
 
         self.rulers = False
+        self.locations = False
+
+        self.location_map = {}
+
         self.checkers = False
         self.pattern = ""
 
         self.input_so_far = ""
 
-        self.location_map = {}
-
     def add_partial_input(self, letter: str):
-
-        # this logic swaps around which superblock is selected.
+        # this logic changes which superblock is selected
         if letter.isdigit():
-            print("user inputted a number, switching superblock")
-            self.default_superblock = int(letter) - 1
-            if self.mcanvas:
-                self.mcanvas.freeze()
-                print("updating graphics")
+            self.selected_superblock = int(letter) - 1
+            self.redraw()
             return
 
-        # this logic collects letters. you can only collect up to two letters.
+        # this logic collects letters. you can only collect up to two letters
         self.input_so_far += letter
-        print("input so far: " + self.input_so_far)
         if len(self.input_so_far) >= 2:
-            self.jump(self.input_so_far, self.default_superblock)
+            self.jump(self.input_so_far, self.selected_superblock)
             self.input_so_far = ""
 
-            # This next line fixes a bug where a tag was not deactivated and a mode was not being
-            # switched properly. However, I think this stuff might be best properly stached in the
-            # object's close functionality, because it is triggered when you close the grid.
-
-            # actions.user.full_grid_close()
-
-        if self.mcanvas:
-            self.mcanvas.freeze()
-            print("updating graphics")
+        self.redraw()
 
     def adjust_bg_transparency(self, amount: int):
         self.bg_transparency += amount
@@ -184,8 +170,7 @@ class MouseSnapMillion:
             self.bg_transparency = 0
         if self.bg_transparency > 255:
             self.bg_transparency = 255
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def adjust_label_transparency(self, amount: int):
         self.label_transparency += amount
@@ -193,8 +178,7 @@ class MouseSnapMillion:
             self.label_transparency = 0
         if self.label_transparency > 255:
             self.label_transparency = 255
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def set_bg_transparency(self, amount: int):
         self.bg_transparency = amount
@@ -202,8 +186,7 @@ class MouseSnapMillion:
             self.label_transparency = 0
         if self.bg_transparency > 255:
             self.label_transparency = 255
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def set_label_transparency(self, amount: int):
         self.label_transparency = amount
@@ -211,25 +194,19 @@ class MouseSnapMillion:
             self.label_transparency = 0
         if self.label_transparency > 255:
             self.label_transparency = 255
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def adjust_field_size(self, amount: int):
-
         self.field_size += amount
         if self.field_size < 5:
             self.field_size = 5
-        # columns and rows depend on field size and window size, but it doesn't recalculate
-        # automatically. I should fix that.
 
         self.columns = int(self.rect.width // self.field_size)
         self.rows = int(self.rect.height // self.field_size)
         self.superblocks = []
 
         self.show()
-
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def setup(self, *, rect: Rect = None, screen_index: int = None):
         # get informaition on number and size of screens
@@ -251,37 +228,30 @@ class MouseSnapMillion:
             screen = screens[0]
             rect = screen.rect
 
-        # store the current rectangle we are drawing on
         self.rect = rect.copy()
-
-        # store the current screen we are drawing on
         self.screen = screen
-
-        # set the field size
         self.field_size = int(setting_field_size.get())
 
         # use the field size to calculate how many rows and how many columns there are
         self.columns = int(self.rect.width // self.field_size)
         self.rows = int(self.rect.height // self.field_size)
-
-        # set the label transparency
         self.label_transparency = int(setting_label_transparency.get(), 16)
-
-        # set the background transparency
         self.bg_transparency = int(setting_superblock_transparency.get(), 16)
 
         self.history = []
 
-        self.active = False
+        self.active = True
+        self.visible = False
 
         self.was_control_mouse_active = False
         self.was_zoom_mouse_active = False
 
-        # set various default values
         self.superblocks = []
-        self.default_superblock = 0
+        self.selected_superblock = 0
 
         self.rulers = False
+        self.locations = True
+
         self.checkers = False
         self.pattern = "phonetic"
 
@@ -293,7 +263,8 @@ class MouseSnapMillion:
         self.mcanvas = canvas.Canvas.from_screen(screen)
 
     def show(self):
-        if self.active:
+        if self.visible:
+            self.redraw()
             return
 
         # if eye_zoom_mouse.zoom_mouse.enabled:
@@ -306,29 +277,32 @@ class MouseSnapMillion:
         self.bg_transparency = self.saved_bg_transparency
         self.label_transparency = self.saved_label_transparency
 
+        self.visible = True
         self.mcanvas.register("draw", self.draw)
         self.mcanvas.freeze()
-        self.active = True
 
     def hide(self):
+        if not self.visible:
+            return
+
         self.saved_label_transparency = self.label_transparency
         self.saved_bg_transparency = self.bg_transparency
 
         self.bg_transparency = 0x00
         self.label_transparency = 0x00
 
+        self.visible = False
         self.redraw()
 
-    def close(self):
+    def deactivate(self):
         if not self.active:
             return
+
         self.hide()
         self.mcanvas.unregister("draw", self.draw)
         self.mcanvas.close()
         self.mcanvas = None
         self.input_so_far = ""
-
-        self.active = False
 
         # if self.was_control_mouse_active and not eye_mouse.control_mouse.enabled:
         #     eye_mouse.control_mouse.toggle()
@@ -338,13 +312,14 @@ class MouseSnapMillion:
         self.was_zoom_mouse_active = False
         self.was_control_mouse_active = False
 
+        self.active = False
+
     def redraw(self):
         if self.mcanvas:
             self.mcanvas.freeze()
 
     def draw(self, canvas):
         paint = canvas.paint
-        print("*********i'm drawing with a field size of " + str(self.field_size))
         # self.field_size = int(setting_field_size.get())
 
         # for other-screen or individual-window grids
@@ -386,7 +361,7 @@ class MouseSnapMillion:
 
             self.superblocks = []
 
-            skipped_superblock = self.default_superblock + 1
+            skipped_superblock = self.selected_superblock + 1
 
             if (
                 int(self.rect.height) // superblock_size == 0
@@ -495,7 +470,7 @@ class MouseSnapMillion:
 
                     # draw the highlighter
 
-                    base_rect = self.superblocks[self.default_superblock].copy()
+                    base_rect = self.superblocks[self.selected_superblock].copy()
                     # print(base_rect)
 
                     if (
@@ -758,13 +733,16 @@ class MouseSnapMillion:
 
         # paint.stroke_width = 1
         # paint.color = "ff0000ff"
-        draw_superblock()
-        draw_text()
+        print("drawing", self.visible)
+        if self.visible:
+            draw_superblock()
+            draw_text()
 
         if self.rulers:
             draw_rulers()
 
-        draw_location_names()
+        if self.locations:
+            draw_location_names()
         # draw_grid(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
 
         # paint.textsize += 12 - self.count * 3
@@ -772,11 +750,11 @@ class MouseSnapMillion:
 
     def map_new_location(self, spoken_letters, location_name):
         self.location_map[location_name] = self.get_label_position(
-            spoken_letters, number=self.default_superblock, relative=True
+            spoken_letters, number=self.selected_superblock, relative=True
         )
 
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.locations = True
+        self.redraw()
 
     def get_label_position(self, spoken_letters, number=-1, relative=False):
         base_rect = self.superblocks[number].copy()
@@ -798,60 +776,57 @@ class MouseSnapMillion:
         ctrl.mouse_move(point.x, point.y)
 
         self.input_so_far = ""
-
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def turn_on_checkers(self):
         self.pattern = "checkers"
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def turn_on_frame(self):
         self.pattern = "frame"
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def turn_on_full(self):
         self.pattern = "none"
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def turn_on_phonetic(self):
         self.pattern = "phonetic"
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
 
     def toggle_rulers(self):
         self.rulers = not self.rulers
-        if self.mcanvas:
-            self.mcanvas.freeze()
+        self.redraw()
+
+    def toggle_locations(self):
+        self.locations = not self.locations
+        self.redraw()
 
 
-mg = MouseSnapMillion()
+mg = FlexMouseGrid()
 
 
 @mod.action_class
 class GridActions:
-    def full_grid_activate():
+    def flex_grid_activate():
         """Show mouse grid"""
-        mg.close()
+        mg.deactivate()
         mg.setup(rect=ui.screens()[0].rect)
         mg.show()
 
-        ctx.tags = ["user.full_mouse_grid_showing"]
+        ctx.tags = ["user.flex_mouse_grid_showing"]
 
-    def full_grid_place_window():
+    def flex_grid_place_window():
         """Places the grid on the currently active window"""
-        mg.close()
+        mg.deactivate()
         mg.setup(rect=ui.active_window().rect)
         mg.show()
 
-        ctx.tags = ["user.full_mouse_grid_showing"]
+        ctx.tags = ["user.flex_mouse_grid_showing"]
 
-    def full_grid_select_screen(screen: int):
+    def flex_grid_select_screen(screen: int):
         """Brings up mouse grid"""
-        mg.close()
+        mg.deactivate()
 
         screen_index = screen - 1
         if mg.mcanvas == None:
@@ -861,56 +836,68 @@ class GridActions:
 
         mg.show()
 
-        ctx.tags = ["user.full_mouse_grid_showing"]
+        ctx.tags = ["user.flex_mouse_grid_showing"]
 
-    def full_grid_close():
-        """Close the active grid"""
+    def flex_grid_deactivate():
+        """Deactivate/close the grid"""
         ctx.tags = []
-        mg.close()
+        mg.deactivate()
 
         print("==== NO MORE GRID FOR YOU MY FRIEND ====")
 
-    def full_grid_checkers():
+    def flex_grid_hide_grid():
+        """Hide the grid"""
+        mg.hide()
+
+    def flex_grid_show_grid():
+        """Show the grid"""
+        mg.show()
+
+    def flex_grid_checkers():
         """Show or hide every other label box so more of the underlying screen content is visible"""
         mg.turn_on_checkers()
 
-    def full_grid_frame():
+    def flex_grid_frame():
         """Show or hide rulers all around the window"""
         mg.turn_on_frame()
 
-    def full_grid_full():
+    def flex_grid_full():
         """Toggle full mouse grid on"""
         mg.turn_on_full()
 
-    def full_grid_phonetic():
+    def flex_grid_phonetic():
         """Toggle phonetic mouse grid on"""
         mg.turn_on_phonetic()
 
-    def full_grid_rulers_toggle():
+    def flex_grid_rulers_toggle():
         """Show or hide rulers all around the window"""
         mg.toggle_rulers()
 
-    def full_grid_adjust_bg_transparency(amount: int):
-        """Increase or decrease the opacity of the background of the full mouse grid (also returns new value)"""
+    def flex_grid_locations_toggle():
+        """Show or hide mapped locations"""
+        mg.toggle_locations()
+
+    def flex_grid_adjust_bg_transparency(amount: int):
+        """Increase or decrease the opacity of the background of the flex mouse grid (also returns new value)"""
         mg.adjust_bg_transparency(amount)
 
-    def full_grid_adjust_label_transparency(amount: int):
-        """Increase or decrease the opacity of the labels behind text for the full mouse grid (also returns new value)"""
+    def flex_grid_adjust_label_transparency(amount: int):
+        """Increase or decrease the opacity of the labels behind text for the flex mouse grid (also returns new value)"""
         mg.adjust_label_transparency(amount)
 
-    def full_grid_adjust_size(amount: int):
+    def flex_grid_adjust_size(amount: int):
         """Increase or decrease size of everything"""
         mg.adjust_field_size(amount)
 
-    def full_grid_input_partial(letter: str):
+    def flex_grid_input_partial(letter: str):
         """Input one letter to highlight a row or column"""
         mg.add_partial_input(str(letter))
 
-    def full_grid_input_horizontal(letter: str):
+    def flex_grid_input_horizontal(letter: str):
         """This command is for if you chose the wrong row and you want to choose a different row before choosing a column"""
         mg.input_so_far = ""
         mg.add_partial_input(str(letter))
 
-    def full_grid_map_location(letter1: str, letter2: str, location_name: str):
+    def flex_grid_map_location(letter1: str, letter2: str, location_name: str):
         """Map a new location"""
         mg.map_new_location(letter1 + letter2, location_name)

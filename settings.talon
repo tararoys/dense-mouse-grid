@@ -1,3 +1,3 @@
 -
 
-tag(): user.full_mouse_grid_enabled
+tag(): user.flex_mouse_grid_enabled
