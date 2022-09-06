@@ -1,9 +1,10 @@
 tag: user.flex_mouse_grid_showing
 -
 
+# Coordinate input
 <user.letter> <user.letter> <number>:
     # Say a letter to choose a row, say a second letter to choose a column, and say a number to
-    # choose the numbered block.  Example: "air bat 2"
+    # choose the numbered block. Example: "air bat 2"
     user.flex_grid_input_partial(number)
     user.flex_grid_input_partial(letter_1)
     user.flex_grid_input_partial(letter_2)
@@ -31,8 +32,8 @@ tag: user.flex_mouse_grid_showing
     # Say a number to select a number block.
     user.flex_grid_input_partial(number)
 
-^horizontal <user.letter>$:
-    # If you already have a row selected, saying 'horizontal' followed by a letter will select a new
+^row <user.letter>$:
+    # If you already have a row selected, saying 'row' followed by a letter will select a new
     # horizontal row.
     user.flex_grid_input_horizontal(letter)
 
@@ -41,10 +42,7 @@ tag: user.flex_mouse_grid_showing
     # a row or a column.
     user.flex_grid_input_partial(letter)
 
-[dense] grid close:
-    # Deactivate/close the grid.
-    user.flex_grid_deactivate()
-
+# Configuration
 grid checker:
     # Change the overlay pattern to a checkerboard pattern.
     user.flex_grid_checkers()
@@ -89,8 +87,7 @@ background lighter:
 rulers switch:
     user.flex_grid_rulers_toggle()
 
-locations switch:
-    user.flex_grid_locations_toggle()
-
-map <user.letter> <user.letter> <user.text>:
-    user.flex_grid_map_location(letter_1, letter_2, text)
+# Other
+grid close:
+    # Deactivate/hide the grid.
+    user.flex_grid_deactivate()

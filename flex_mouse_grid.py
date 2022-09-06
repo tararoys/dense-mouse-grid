@@ -1,12 +1,6 @@
-# Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily edited by Tara
-from talon import (
-    canvas,
-    Context,
-    ctrl,
-    Module,
-    registry,
-    ui,
-)
+# Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily
+# edited by Tara, and again heavily modified by brollin.
+from talon import canvas, Context, ctrl, Module, registry, ui
 from talon.skia import Paint, Rect
 from talon.types.point import Point2d
 
@@ -122,7 +116,7 @@ class FlexMouseGrid:
         self.history = []
         self.mcanvas = None
         self.active = False
-        self.visible = False
+        self.grid_showing = False
         self.was_control_mouse_active = False
         self.was_zoom_mouse_active = False
         self.columns = 0
@@ -140,9 +134,9 @@ class FlexMouseGrid:
         self.selected_superblock = 0
 
         self.rulers = False
-        self.locations = False
+        self.points_showing = False
 
-        self.location_map = {}
+        self.points_map = {"test": Point2d(500, 500)}
 
         self.checkers = False
         self.pattern = ""
@@ -205,7 +199,7 @@ class FlexMouseGrid:
         self.rows = int(self.rect.height // self.field_size)
         self.superblocks = []
 
-        self.show()
+        self.show_grid()
         self.redraw()
 
     def setup(self, *, rect: Rect = None, screen_index: int = None):
@@ -230,6 +224,7 @@ class FlexMouseGrid:
 
         self.rect = rect.copy()
         self.screen = screen
+
         self.field_size = int(setting_field_size.get())
 
         # use the field size to calculate how many rows and how many columns there are
@@ -241,7 +236,7 @@ class FlexMouseGrid:
         self.history = []
 
         self.active = True
-        self.visible = False
+        self.grid_showing = False
 
         self.was_control_mouse_active = False
         self.was_zoom_mouse_active = False
@@ -250,22 +245,20 @@ class FlexMouseGrid:
         self.selected_superblock = 0
 
         self.rulers = False
-        self.locations = True
+        self.points_showing = True
 
         self.checkers = False
         self.pattern = "phonetic"
 
         self.input_so_far = ""
 
-        # close the old canvas if one exists and open a new one
         if self.mcanvas is not None:
             self.mcanvas.close()
         self.mcanvas = canvas.Canvas.from_screen(screen)
+        self.mcanvas.register("draw", self.draw)
+        self.mcanvas.freeze()
 
-    def show(self):
-        if self.visible:
-            self.redraw()
-            return
+    def show_grid(self):
 
         # if eye_zoom_mouse.zoom_mouse.enabled:
         #     self.was_zoom_mouse_active = True
@@ -277,12 +270,11 @@ class FlexMouseGrid:
         self.bg_transparency = self.saved_bg_transparency
         self.label_transparency = self.saved_label_transparency
 
-        self.visible = True
-        self.mcanvas.register("draw", self.draw)
-        self.mcanvas.freeze()
+        self.grid_showing = True
+        self.redraw()
 
-    def hide(self):
-        if not self.visible:
+    def hide_grid(self):
+        if not self.grid_showing:
             return
 
         self.saved_label_transparency = self.label_transparency
@@ -291,17 +283,14 @@ class FlexMouseGrid:
         self.bg_transparency = 0x00
         self.label_transparency = 0x00
 
-        self.visible = False
+        self.grid_showing = False
         self.redraw()
 
     def deactivate(self):
         if not self.active:
             return
 
-        self.hide()
-        self.mcanvas.unregister("draw", self.draw)
-        self.mcanvas.close()
-        self.mcanvas = None
+        self.hide_grid()
         self.input_so_far = ""
 
         # if self.was_control_mouse_active and not eye_mouse.control_mouse.enabled:
@@ -606,7 +595,6 @@ class FlexMouseGrid:
                 and self.input_so_far.endswith(letters[col % len(letters)])
             ):
                 # draw columns of phonetic words
-
                 phonetic_word = list(registry.lists["user.letter"][0].keys())[
                     col % len(letters)
                 ]
@@ -717,44 +705,55 @@ class FlexMouseGrid:
                     background_rect.y = y_pos
                     canvas.draw_text(text_string, background_rect.x, background_rect.y)
 
-        def draw_location_names():
+        def draw_point_labels():
             canvas.paint.text_align = canvas.paint.TextAlign.CENTER
             canvas.paint.textsize = 17
-            canvas.paint.color = setting_small_letters_color.get() + hx(
-                self.label_transparency
-            )
+            canvas.paint.color = setting_small_letters_color.get()
 
-            for label, location in self.location_map.items():
-                canvas.draw_text(label, location.x, location.y)
+            for label, point in self.points_map.items():
+                canvas.draw_text(label, point.x, point.y)
 
-        # paint.color = "00ff004f"
-        # draw_crosses()
         paint.color = "ffffffff"
-
-        # paint.stroke_width = 1
-        # paint.color = "ff0000ff"
-        print("drawing", self.visible)
-        if self.visible:
+        if self.grid_showing:
             draw_superblock()
             draw_text()
+            # draw_crosses()
 
-        if self.rulers:
-            draw_rulers()
+            if self.rulers:
+                draw_rulers()
 
-        if self.locations:
-            draw_location_names()
-        # draw_grid(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
+        if self.points_showing:
+            draw_point_labels()
 
-        # paint.textsize += 12 - self.count * 3
-        # draw_text(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
-
-    def map_new_location(self, spoken_letters, location_name):
-        self.location_map[location_name] = self.get_label_position(
+    def map_new_point(self, spoken_letters, point_name):
+        self.points_map[point_name] = self.get_label_position(
             spoken_letters, number=self.selected_superblock, relative=True
         )
 
-        self.locations = True
+        self.points_showing = True
         self.redraw()
+
+    def unmap_point(self, point_name):
+        if point_name == "":
+            self.points_map = {}
+            self.redraw()
+            return
+
+        if point_name not in self.points_map:
+            print("point", point_name, "not found")
+            return
+
+        del self.points_map[point_name]
+        self.redraw()
+
+    def go_to_point(self, point_name):
+        if point_name not in self.points_map:
+            print("point", point_name, "not found")
+            return
+
+        # points are always relative to canvas
+        point = self.points_map[point_name]
+        ctrl.mouse_move(self.rect.x + point.x, self.rect.y + point.y)
 
     def get_label_position(self, spoken_letters, number=-1, relative=False):
         base_rect = self.superblocks[number].copy()
@@ -798,12 +797,13 @@ class FlexMouseGrid:
         self.rulers = not self.rulers
         self.redraw()
 
-    def toggle_locations(self):
-        self.locations = not self.locations
+    def toggle_points(self):
+        self.points_showing = not self.points_showing
         self.redraw()
 
 
 mg = FlexMouseGrid()
+mg.setup()
 
 
 @mod.action_class
@@ -812,7 +812,7 @@ class GridActions:
         """Show mouse grid"""
         mg.deactivate()
         mg.setup(rect=ui.screens()[0].rect)
-        mg.show()
+        mg.show_grid()
 
         ctx.tags = ["user.flex_mouse_grid_showing"]
 
@@ -820,7 +820,7 @@ class GridActions:
         """Places the grid on the currently active window"""
         mg.deactivate()
         mg.setup(rect=ui.active_window().rect)
-        mg.show()
+        mg.show_grid()
 
         ctx.tags = ["user.flex_mouse_grid_showing"]
 
@@ -834,7 +834,7 @@ class GridActions:
         elif mg.rect != ui.screens()[screen_index].rect:
             mg.setup(rect=ui.screens()[screen_index].rect)
 
-        mg.show()
+        mg.show_grid()
 
         ctx.tags = ["user.flex_mouse_grid_showing"]
 
@@ -843,15 +843,13 @@ class GridActions:
         ctx.tags = []
         mg.deactivate()
 
-        print("==== NO MORE GRID FOR YOU MY FRIEND ====")
-
     def flex_grid_hide_grid():
         """Hide the grid"""
-        mg.hide()
+        mg.hide_grid()
 
     def flex_grid_show_grid():
         """Show the grid"""
-        mg.show()
+        mg.show_grid()
 
     def flex_grid_checkers():
         """Show or hide every other label box so more of the underlying screen content is visible"""
@@ -873,9 +871,10 @@ class GridActions:
         """Show or hide rulers all around the window"""
         mg.toggle_rulers()
 
-    def flex_grid_locations_toggle():
-        """Show or hide mapped locations"""
-        mg.toggle_locations()
+    def flex_grid_points_toggle():
+        """Show or hide mapped points"""
+        print(mg.mcanvas)
+        mg.toggle_points()
 
     def flex_grid_adjust_bg_transparency(amount: int):
         """Increase or decrease the opacity of the background of the flex mouse grid (also returns new value)"""
@@ -898,6 +897,14 @@ class GridActions:
         mg.input_so_far = ""
         mg.add_partial_input(str(letter))
 
-    def flex_grid_map_location(letter1: str, letter2: str, location_name: str):
-        """Map a new location"""
-        mg.map_new_location(letter1 + letter2, location_name)
+    def flex_grid_map_point(letter1: str, letter2: str, point_name: str):
+        """Map a new point"""
+        mg.map_new_point(letter1 + letter2, point_name)
+
+    def flex_grid_unmap_point(point_name: str):
+        """Unmap a point or all points"""
+        mg.unmap_point(point_name)
+
+    def flex_grid_go_to_point(point_name: str):
+        """Go to a point"""
+        mg.go_to_point(point_name)
