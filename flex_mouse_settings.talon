@@ -20,8 +20,7 @@ settings():
     # Sets the background color of the superblock
     user.flex_mouse_grid_superblock_background_color = "440000"
 
-    # Sets the stroke color of the superblock (Also known as the oudline color, for those of you who
-    # are not vector graphics artists)
+    # Sets the stroke color of the superblock
     user.flex_mouse_grid_superblock_stroke_color = "ffffff"
 
     # ----------- Font settings
@@ -33,8 +32,8 @@ settings():
 
     ## ------- Size settings
 
-    # Set the size of the smaller blocks letter blocks.  This is the setting that ajusts the sizing of everything.
-    user.flex_mouse_grid_field_size = "40"
+    # Set the size of the smaller blocks letter blocks. This is the setting that ajusts the sizing of everything.
+    user.flex_mouse_grid_field_size = "30"
 
     ## ------- Overlay transparency settings.
 

@@ -1,12 +1,26 @@
 # Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily
 # edited by Tara, and again heavily modified by brollin.
-from talon import canvas, Context, ctrl, Module, registry, ui
+from talon import actions, canvas, Context, ctrl, Module, registry, ui, storage
 from talon.skia import Paint, Rect
 from talon.types.point import Point2d
 
 # from talon_plugins import eye_zoom_mouse, eye_mouse
 
 import string
+
+
+class FlexStorage:
+    flex_storage = storage.get("flex-mouse-grid", {})
+
+    def backup(self) -> None:
+        storage.set("flex-mouse-grid", self.flex_storage)
+
+    def save(self, points_map) -> None:
+        self.flex_storage[actions.app.name()] = points_map
+        storage.set("flex-mouse-grid", self.flex_storage)
+
+    def load(self) -> None:
+        pass  # TODO
 
 
 def hx(v: int) -> str:
@@ -84,14 +98,14 @@ setting_label_transparency = mod.setting(
     desc="sets the transparency of the labels",
 )
 
-dense_grid_startup_mode = mod.setting(
+setting_startup_mode = mod.setting(
     "flex_mouse_grid_startup_mode",
     type=str,
     default="phonetic",
     desc="determines which mode the grid will be in each time the grid is reopened.",
 )
 
-setting_dense_grid_font = mod.setting(
+setting_flex_grid_font = mod.setting(
     "flex_mouse_grid_font",
     type=str,
     default="arial rounded mt",
@@ -136,12 +150,14 @@ class FlexMouseGrid:
         self.rulers = False
         self.points_showing = False
 
-        self.points_map = {"test": Point2d(500, 500)}
+        self.points_map = {}
 
         self.checkers = False
         self.pattern = ""
 
         self.input_so_far = ""
+
+        self.storage = FlexStorage()
 
     def add_partial_input(self, letter: str):
         # this logic changes which superblock is selected
@@ -205,6 +221,9 @@ class FlexMouseGrid:
     def setup(self, *, rect: Rect = None, screen_index: int = None):
         # get informaition on number and size of screens
         screens = ui.screens()
+
+        # print(actions.app.name())
+
         # each if block here might set the rect to None to indicate failure
         # rect contains position, height, and width of the canvas
         if rect is not None:
@@ -248,7 +267,7 @@ class FlexMouseGrid:
         self.points_showing = True
 
         self.checkers = False
-        self.pattern = "phonetic"
+        self.pattern = setting_startup_mode.get()
 
         self.input_so_far = ""
 
@@ -435,7 +454,7 @@ class FlexMouseGrid:
 
             canvas.paint.text_align = canvas.paint.TextAlign.CENTER
             canvas.paint.textsize = 17
-            canvas.paint.typeface = setting_dense_grid_font.get()
+            canvas.paint.typeface = setting_flex_grid_font.get()
             # canvas.paint.typeface = "arial rounded mt"
 
             skip_it = False
@@ -873,7 +892,6 @@ class GridActions:
 
     def flex_grid_points_toggle():
         """Show or hide mapped points"""
-        print(mg.mcanvas)
         mg.toggle_points()
 
     def flex_grid_adjust_bg_transparency(amount: int):

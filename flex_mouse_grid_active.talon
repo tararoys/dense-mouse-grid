@@ -43,51 +43,41 @@ tag: user.flex_mouse_grid_showing
     user.flex_grid_input_partial(letter)
 
 # Configuration
-grid checker:
-    # Change the overlay pattern to a checkerboard pattern.
-    user.flex_grid_checkers()
+# Change the overlay pattern to a checkerboard pattern.
+grid checker: user.flex_grid_checkers()
 
-grid frame:
-    # Change the overlay pattern to a pattern where it is overlaid with frames.
-    user.flex_grid_frame()
+# Change the overlay pattern to a pattern where it is overlaid with frames.
+grid frame: user.flex_grid_frame()
 
-grid phonetic:
-    # Provides onscreen phonetic alphabet in rows and columns to make it so one does not have to
-    # remember the talon phonetic alphabet
-    user.flex_grid_phonetic()
+# Provides onscreen phonetic alphabet in rows and columns to make it so one does not have to
+# remember the talon phonetic alphabet
+grid phonetic: user.flex_grid_phonetic()
 
-grid full:
-    # Change the overlay pattern to overlay the screen with every possible number-letter-letter combination
-    user.flex_grid_full()
+# Change the overlay pattern to overlay the screen with every possible number-letter-letter combination
+grid full: user.flex_grid_full()
 
-grid (bigger | larger):
-    # Make the grid blocks larger.
-    user.flex_grid_adjust_size(5)
+# Make the grid blocks larger.
+grid (bigger | larger): user.flex_grid_adjust_size(5)
+grid (bigger | larger) bump: user.flex_grid_adjust_size(1)
 
-grid smaller:
-    # Make the grib blocks smaller.
-    user.flex_grid_adjust_size(-5)
+# Make the grib blocks smaller.
+grid smaller: user.flex_grid_adjust_size(-5)
+grid smaller bump: user.flex_grid_adjust_size(-1)
 
-letters darker:
-    # Make the small letter labels more visible.
-    user.flex_grid_adjust_label_transparency(50)
+# Make the small letter labels more visible.
+letters darker: user.flex_grid_adjust_label_transparency(50)
+letters darker bump: user.flex_grid_adjust_label_transparency(10)
 
-letters lighter:
-    # Make the small letter labels less visible.
-    user.flex_grid_adjust_label_transparency(-50)
+# Make the small letter labels less visible.
+letters lighter: user.flex_grid_adjust_label_transparency(-50)
+letters lighter bump: user.flex_grid_adjust_label_transparency(-10)
 
-background darker:
-    # Make the large number blocks more visible.
-    user.flex_grid_adjust_bg_transparency(20)
+# Make the large number blocks more visible.
+background darker: user.flex_grid_adjust_bg_transparency(20)
+background darker bump: user.flex_grid_adjust_bg_transparency(4)
 
-background lighter:
-    # Make the large number blocks less visible.
-    user.flex_grid_adjust_bg_transparency(-20)
+# Make the large number blocks less visible.
+background lighter: user.flex_grid_adjust_bg_transparency(-20)
+background lighter bump: user.flex_grid_adjust_bg_transparency(-4)
 
-rulers switch:
-    user.flex_grid_rulers_toggle()
-
-# Other
-grid close:
-    # Deactivate/hide the grid.
-    user.flex_grid_deactivate()
+rulers switch: user.flex_grid_rulers_toggle()
