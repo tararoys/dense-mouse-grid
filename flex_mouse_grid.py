@@ -1,26 +1,27 @@
 # Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily
 # edited by Tara, and again heavily modified by brollin.
+import typing
 from talon import actions, canvas, Context, ctrl, Module, registry, ui, storage
 from talon.skia import Paint, Rect
 from talon.types.point import Point2d
-
-# from talon_plugins import eye_zoom_mouse, eye_mouse
 
 import string
 
 
 class FlexStorage:
-    flex_storage = storage.get("flex-mouse-grid", {})
+    flex_storage = storage.get("flex-mouse-grid", {"global": {}})
 
     def backup(self) -> None:
         storage.set("flex-mouse-grid", self.flex_storage)
 
     def save(self, points_map) -> None:
-        self.flex_storage[actions.app.name()] = points_map
+        # self.flex_storage[actions.app.name()] = points_map
+        self.flex_storage["global"] = points_map
         storage.set("flex-mouse-grid", self.flex_storage)
 
-    def load(self) -> None:
-        pass  # TODO
+    def load(self):
+        self.flex_storage = storage.get("flex-mouse-grid", {"global": {}})
+        return self.flex_storage["global"]
 
 
 def hx(v: int) -> str:
@@ -33,7 +34,7 @@ mod.tag(
     "flex_mouse_grid_showing",
     desc="Tag indicates whether the flex mouse grid is showing",
 )
-mod.tag("flex_mouse_grid_enabled", desc="Tag enables the flex mouse grid commands.")
+# mod.tag("flex_mouse_grid_enabled", desc="Tag enables the flex mouse grid commands.")
 
 setting_letters_background_color = mod.setting(
     "flex_mouse_grid_letters_background_color",
@@ -115,13 +116,6 @@ setting_flex_grid_font = mod.setting(
 
 ctx = Context()
 
-ctx.matches = r"""
-tag: user.flex_mouse_grid_enabled
-"""
-
-# collect all lowercase letters a-z
-letters = string.ascii_lowercase
-
 
 class FlexMouseGrid:
     def __init__(self):
@@ -136,12 +130,14 @@ class FlexMouseGrid:
         self.columns = 0
         self.rows = 0
 
+        # configured via settings
+        self.field_size = 20
         self.label_transparency = 0x99
         self.bg_transparency = 0x22
-
+        self.pattern = ""
+        self.letters = string.ascii_lowercase
         self.saved_label_transparency = 0x99
         self.saved_bg_transparency = 0x22
-        self.field_size = 20
 
         self.superblocks = []
 
@@ -150,14 +146,12 @@ class FlexMouseGrid:
         self.rulers = False
         self.points_showing = False
 
-        self.points_map = {}
-
         self.checkers = False
-        self.pattern = ""
 
         self.input_so_far = ""
 
         self.storage = FlexStorage()
+        self.points_map = self.storage.load()
 
     def add_partial_input(self, letter: str):
         # this logic changes which superblock is selected
@@ -264,7 +258,7 @@ class FlexMouseGrid:
         self.selected_superblock = 0
 
         self.rulers = False
-        self.points_showing = True
+        self.points_showing = False
 
         self.checkers = False
         self.pattern = setting_startup_mode.get()
@@ -362,7 +356,7 @@ class FlexMouseGrid:
 
         def draw_superblock():
 
-            superblock_size = len(letters) * self.field_size
+            superblock_size = len(self.letters) * self.field_size
 
             colors = ["000055", "665566", "554444", "888855", "aa55aa", "55cccc"] * 100
             num = 1
@@ -483,9 +477,9 @@ class FlexMouseGrid:
 
                     if (
                         row >= (base_rect.y / self.field_size)
-                        and row <= (base_rect.y / self.field_size + len(letters))
+                        and row <= (base_rect.y / self.field_size + len(self.letters))
                         and col >= (base_rect.x / self.field_size)
-                        and col <= (base_rect.x / self.field_size + len(letters))
+                        and col <= (base_rect.x / self.field_size + len(self.letters))
                     ):
                         within_selected_superblock = True
 
@@ -493,7 +487,7 @@ class FlexMouseGrid:
                             within_selected_superblock
                             and len(self.input_so_far) == 1
                             and self.input_so_far.startswith(
-                                letters[row % len(letters)]
+                                self.letters[row % len(self.letters)]
                             )
                         ):
                             skip_it = False
@@ -504,7 +498,7 @@ class FlexMouseGrid:
         def draw_letters(row, col):
             # get letters
             # gets a letter from the alphabet of the form 'ab' or 'DA'
-            text_string = f"{letters[row % len(letters)]}{letters[col % len(letters)]}"
+            text_string = f"{self.letters[row % len(self.letters)]}{self.letters[col % len(self.letters)]}"
             # this the measure text is the box around the text.
             canvas.paint.textsize = int(self.field_size * 3 / 5)
             # canvas.paint.textsize = int(field_size*4/5)
@@ -521,10 +515,10 @@ class FlexMouseGrid:
 
             # remove distracting letters from frame mode frames.
             if self.pattern == "frame":
-                if letters[row % len(letters)] == "a":
+                if self.letters[row % len(self.letters)] == "a":
 
                     # gets a letter from the alphabet of the form 'ab' or 'DA'
-                    text_string = f"{letters[col % len(letters)]}"
+                    text_string = f"{self.letters[col % len(self.letters)]}"
                     # this the measure text is the box around the text.
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     # canvas.paint.textsize = int(field_size*4/5)
@@ -537,8 +531,8 @@ class FlexMouseGrid:
                         row * self.field_size + self.field_size / 2,
                     )  # I think this re-centers the point?
                     background_rect = background_rect.inset(-4)
-                elif letters[col % len(letters)] == "a":
-                    text_string = f"{letters[row % len(letters)]}"
+                elif self.letters[col % len(self.letters)] == "a":
+                    text_string = f"{self.letters[row % len(self.letters)]}"
 
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     # canvas.paint.textsize = int(field_size*4/5)
@@ -554,10 +548,10 @@ class FlexMouseGrid:
                     background_rect = background_rect.inset(-4)
 
             elif self.pattern == "phonetic":
-                if letters[row % len(letters)] == "a":
+                if self.letters[row % len(self.letters)] == "a":
 
                     # gets a letter from the alphabet of the form 'ab' or 'DA'
-                    text_string = f"{letters[col % len(letters)]}"
+                    text_string = f"{self.letters[col % len(self.letters)]}"
                     # this the measure text is the box around the text.
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     # canvas.paint.textsize = int(field_size*4/5)
@@ -570,9 +564,9 @@ class FlexMouseGrid:
                         row * self.field_size + self.field_size / 2,
                     )  # I think this re-centers the point?
                     background_rect = background_rect.inset(-4)
-                elif letters[col % len(letters)] == "a":
+                elif self.letters[col % len(self.letters)] == "a":
                     # gets the phonetic words currently being used
-                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(letters)]}"
+                    text_string = f"{list(registry.lists['user.letter'][0].keys())[row%len(self.letters)]}"
 
                     canvas.paint.textsize = int(self.field_size * 3 / 5)
                     # canvas.paint.textsize = int(field_size*4/5)
@@ -588,9 +582,9 @@ class FlexMouseGrid:
                     background_rect = background_rect.inset(-4)
 
             if not (
-                self.input_so_far.startswith(letters[row % len(letters)])
+                self.input_so_far.startswith(self.letters[row % len(self.letters)])
                 or len(self.input_so_far) > 1
-                and self.input_so_far.endswith(letters[col % len(letters)])
+                and self.input_so_far.endswith(self.letters[col % len(self.letters)])
             ):
                 canvas.paint.color = setting_letters_background_color.get() + hx(
                     self.label_transparency
@@ -609,13 +603,13 @@ class FlexMouseGrid:
 
             # sees if the background should be highlighted
             elif (
-                self.input_so_far.startswith(letters[row % len(letters)])
+                self.input_so_far.startswith(self.letters[row % len(self.letters)])
                 or len(self.input_so_far) > 1
-                and self.input_so_far.endswith(letters[col % len(letters)])
+                and self.input_so_far.endswith(self.letters[col % len(self.letters)])
             ):
                 # draw columns of phonetic words
                 phonetic_word = list(registry.lists["user.letter"][0].keys())[
-                    col % len(letters)
+                    col % len(self.letters)
                 ]
                 letter_list = list(phonetic_word)
                 for index, letter in enumerate(letter_list):
@@ -701,7 +695,7 @@ class FlexMouseGrid:
                 canvas.paint.color = "ffffffff"
 
                 for row in range(0, self.rows + 1):
-                    text_string = letters[row % len(letters)] + "_"
+                    text_string = self.letters[row % len(self.letters)] + "_"
                     text_rect = canvas.paint.measure_text(text_string)[1]
                     background_rect = text_rect.copy()
                     background_rect.x = x_pos
@@ -717,7 +711,7 @@ class FlexMouseGrid:
                 canvas.paint.textsize = 17
                 canvas.paint.color = "ffffffff"
                 for col in range(0, self.columns + 1):
-                    text_string = "_" + letters[col % len(letters)]
+                    text_string = "_" + self.letters[col % len(self.letters)]
                     text_rect = canvas.paint.measure_text(text_string)[1]
                     background_rect = text_rect.copy()
                     background_rect.x = col * self.field_size + self.field_size / 2
@@ -729,8 +723,14 @@ class FlexMouseGrid:
             canvas.paint.textsize = 17
             canvas.paint.color = setting_small_letters_color.get()
 
-            for label, point in self.points_map.items():
-                canvas.draw_text(label, point.x, point.y)
+            for label, points in self.points_map.items():
+                if len(points) > 1:
+                    for index, point in enumerate(points):
+                        canvas.draw_text(
+                            label + f" ({str(index + 1)})", point.x, point.y
+                        )
+                else:
+                    canvas.draw_text(label, points[0].x, points[0].y)
 
         paint.color = "ffffffff"
         if self.grid_showing:
@@ -744,10 +744,26 @@ class FlexMouseGrid:
         if self.points_showing:
             draw_point_labels()
 
-    def map_new_point(self, spoken_letters, point_name):
-        self.points_map[point_name] = self.get_label_position(
-            spoken_letters, number=self.selected_superblock, relative=True
-        )
+    def save_points(self):
+        self.storage.save(self.points_map)
+
+    def map_new_points(self, point_name, spoken_letters):
+        if len(spoken_letters) % 2 != 0:
+            print("uneven number of letters supplied")
+            return
+
+        self.points_map[point_name] = []
+
+        for point_index in range(0, len(spoken_letters), 2):
+            self.points_map[point_name].append(
+                self.get_label_position(
+                    spoken_letters[point_index : point_index + 2],
+                    number=self.selected_superblock,
+                    relative=True,
+                )
+            )
+
+        self.save_points()
 
         self.points_showing = True
         self.redraw()
@@ -755,6 +771,7 @@ class FlexMouseGrid:
     def unmap_point(self, point_name):
         if point_name == "":
             self.points_map = {}
+            self.save_points()
             self.redraw()
             return
 
@@ -763,15 +780,16 @@ class FlexMouseGrid:
             return
 
         del self.points_map[point_name]
+        self.save_points()
         self.redraw()
 
-    def go_to_point(self, point_name):
+    def go_to_point(self, point_name, index):
         if point_name not in self.points_map:
             print("point", point_name, "not found")
             return
 
         # points are always relative to canvas
-        point = self.points_map[point_name]
+        point = self.points_map[point_name][index - 1]
         ctrl.mouse_move(self.rect.x + point.x, self.rect.y + point.y)
 
     def get_label_position(self, spoken_letters, number=-1, relative=False):
@@ -781,8 +799,8 @@ class FlexMouseGrid:
             base_rect.x += self.rect.x
             base_rect.y += self.rect.y
 
-        x_idx = letters.index(spoken_letters[1])
-        y_idx = letters.index(spoken_letters[0])
+        x_idx = self.letters.index(spoken_letters[1])
+        y_idx = self.letters.index(spoken_letters[0])
 
         return Point2d(
             base_rect.x + x_idx * self.field_size + self.field_size / 2,
@@ -816,8 +834,11 @@ class FlexMouseGrid:
         self.rulers = not self.rulers
         self.redraw()
 
-    def toggle_points(self):
-        self.points_showing = not self.points_showing
+    def toggle_points(self, onoff=None):
+        if onoff is not None:
+            self.points_showing = onoff
+        else:
+            self.points_showing = not self.points_showing
         self.redraw()
 
 
@@ -859,8 +880,9 @@ class GridActions:
 
     def flex_grid_deactivate():
         """Deactivate/close the grid"""
-        ctx.tags = []
         mg.deactivate()
+
+        ctx.tags = []
 
     def flex_grid_hide_grid():
         """Hide the grid"""
@@ -890,9 +912,9 @@ class GridActions:
         """Show or hide rulers all around the window"""
         mg.toggle_rulers()
 
-    def flex_grid_points_toggle():
+    def flex_grid_points_toggle(onoff: int):
         """Show or hide mapped points"""
-        mg.toggle_points()
+        mg.toggle_points(onoff=onoff == 1)
 
     def flex_grid_adjust_bg_transparency(amount: int):
         """Increase or decrease the opacity of the background of the flex mouse grid (also returns new value)"""
@@ -915,14 +937,14 @@ class GridActions:
         mg.input_so_far = ""
         mg.add_partial_input(str(letter))
 
-    def flex_grid_map_point(letter1: str, letter2: str, point_name: str):
+    def flex_grid_map_point(point_name: str, letter_list: typing.List[str]):
         """Map a new point"""
-        mg.map_new_point(letter1 + letter2, point_name)
+        mg.map_new_points(point_name, letter_list)
 
     def flex_grid_unmap_point(point_name: str):
         """Unmap a point or all points"""
         mg.unmap_point(point_name)
 
-    def flex_grid_go_to_point(point_name: str):
+    def flex_grid_go_to_point(point_name: str, index: int):
         """Go to a point"""
-        mg.go_to_point(point_name)
+        mg.go_to_point(point_name, index)

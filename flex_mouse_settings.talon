@@ -41,10 +41,10 @@ settings():
     user.flex_mouse_grid_superblock_transparency = "0x77"
 
     # Sets the transparency of the small blocks.
-    user.flex_mouse_grid_label_transparency = "0x44"
+    user.flex_mouse_grid_label_transparency = "0x02"
 
     ## ------- Sets what mode the grid comes up in when you open Talon
 
     # Mode settings: each time you close and reopen the grid determines it reverts to the following
     # mode: There are four modes: "phonetic" , "frame", "checkers" , and "full".
-    user.flex_mouse_grid_startup_mode = "phonetic"
+    user.flex_mouse_grid_startup_mode = "checkers"
