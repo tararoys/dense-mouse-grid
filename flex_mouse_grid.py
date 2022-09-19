@@ -137,7 +137,7 @@ class FlexMouseGrid:
         self.pattern = ""
         self.letters = string.ascii_lowercase
         self.saved_label_transparency = 0x99
-        self.saved_bg_transparency = 0x22
+        self.saved_bg_transparency = 0x99
 
         self.superblocks = []
 
@@ -280,8 +280,8 @@ class FlexMouseGrid:
         #     self.was_control_mouse_active = True
         #     eye_mouse.control_mouse.toggle()
 
-        self.bg_transparency = self.saved_bg_transparency
-        self.label_transparency = self.saved_label_transparency
+        # self.bg_transparency = self.saved_bg_transparency
+        # self.label_transparency = self.saved_label_transparency
 
         self.grid_showing = True
         self.redraw()
@@ -292,9 +292,6 @@ class FlexMouseGrid:
 
         self.saved_label_transparency = self.label_transparency
         self.saved_bg_transparency = self.bg_transparency
-
-        self.bg_transparency = 0x00
-        self.label_transparency = 0x00
 
         self.grid_showing = False
         self.redraw()
@@ -321,7 +318,6 @@ class FlexMouseGrid:
             self.mcanvas.freeze()
 
     def draw(self, canvas):
-        paint = canvas.paint
         # self.field_size = int(setting_field_size.get())
 
         # for other-screen or individual-window grids
@@ -473,7 +469,6 @@ class FlexMouseGrid:
                     # draw the highlighter
 
                     base_rect = self.superblocks[self.selected_superblock].copy()
-                    # print(base_rect)
 
                     if (
                         row >= (base_rect.y / self.field_size)
@@ -502,15 +497,13 @@ class FlexMouseGrid:
             # this the measure text is the box around the text.
             canvas.paint.textsize = int(self.field_size * 3 / 5)
             # canvas.paint.textsize = int(field_size*4/5)
-            text_rect = canvas.paint.measure_text(text_string)[
-                1
-            ]  # find out how many characters long the text is?
+            text_rect = canvas.paint.measure_text(text_string)[1]
 
             background_rect = text_rect.copy()
             background_rect.center = Point2d(
                 col * self.field_size + self.field_size / 2,
                 row * self.field_size + self.field_size / 2,
-            )  # I think this re-centers the point?
+            )
             background_rect = background_rect.inset(-4)
 
             # remove distracting letters from frame mode frames.
@@ -572,7 +565,7 @@ class FlexMouseGrid:
                     # canvas.paint.textsize = int(field_size*4/5)
                     text_rect = canvas.paint.measure_text(text_string)[
                         1
-                    ]  # 10find out how many characters long the text is?
+                    ]  # find out how many characters long the text is?
 
                     background_rect = text_rect.copy()
                     background_rect.center = Point2d(
@@ -719,20 +712,38 @@ class FlexMouseGrid:
                     canvas.draw_text(text_string, background_rect.x, background_rect.y)
 
         def draw_point_labels():
-            canvas.paint.text_align = canvas.paint.TextAlign.CENTER
-            canvas.paint.textsize = 17
-            canvas.paint.color = setting_small_letters_color.get()
+
+            canvas.paint.text_align = canvas.paint.TextAlign.LEFT
+            canvas.paint.textsize = int(self.field_size * 3 / 5)
 
             for label, points in self.points_map.items():
-                if len(points) > 1:
-                    for index, point in enumerate(points):
-                        canvas.draw_text(
-                            label + f" ({str(index + 1)})", point.x, point.y
-                        )
-                else:
-                    canvas.draw_text(label, points[0].x, points[0].y)
+                for index, point in enumerate(points):
+                    # draw point label text
+                    if len(points) > 1:
+                        point_label = label + f" ({str(index + 1)})"
+                    else:
+                        point_label = label
+                    text_rect = canvas.paint.measure_text(point_label)[1]
+                    text_rect = text_rect.inset(-2)
+                    canvas.paint.color = setting_small_letters_color.get()
+                    canvas.draw_text(
+                        point_label, point.x + 3, point.y + text_rect.height * 3 // 4
+                    )
 
-        paint.color = "ffffffff"
+                    # draw transparent label box
+                    background_rect = text_rect.copy()
+                    background_rect.x = point.x
+                    background_rect.y = point.y
+                    canvas.paint.color = setting_letters_background_color.get() + hx(
+                        self.label_transparency
+                    )
+                    canvas.paint.style = Paint.Style.FILL
+                    canvas.draw_rect(background_rect)
+
+                    # draw a dot for the exact location of the point
+                    canvas.paint.color = "ffffff"
+                    canvas.draw_circle(point.x, point.y, 2)
+
         if self.grid_showing:
             draw_superblock()
             draw_text()

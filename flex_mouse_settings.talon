@@ -23,28 +23,28 @@ settings():
     # Sets the stroke color of the superblock
     user.flex_mouse_grid_superblock_stroke_color = "ffffff"
 
-    # ----------- Font settings
+    # ----------- Font setting
 
-    # Set the font.  Some nice ones include 'arial rounded mt' for a sans-serif font, 'times new
+    # Set the font. Some nice ones include 'arial rounded mt' for a sans-serif font, 'times new
     # roman' for a serif font, and 'lucida sans typewriter' for a monospace font.
     user.flex_mouse_grid_font = 'arial rounded mt'
 
 
-    ## ------- Size settings
-
-    # Set the size of the smaller blocks letter blocks. This is the setting that ajusts the sizing of everything.
+    ## ----------- Size setting
+.
+    # This ajusts the sizing of everything.
     user.flex_mouse_grid_field_size = "30"
 
-    ## ------- Overlay transparency settings.
+    ## ----------- Overlay transparency settings
 
-    # Sets the transparecny of the large grid squares
-    user.flex_mouse_grid_superblock_transparency = "0x77"
+    # Sets the transparency of the large grid squares
+    user.flex_mouse_grid_superblock_transparency = "0x20"
 
-    # Sets the transparency of the small blocks.
-    user.flex_mouse_grid_label_transparency = "0x02"
+    # Sets the transparency of the small blocks
+    user.flex_mouse_grid_label_transparency = "0x77"
 
-    ## ------- Sets what mode the grid comes up in when you open Talon
+    ## ----------- Startup mode setting
 
     # Mode settings: each time you close and reopen the grid determines it reverts to the following
     # mode: There are four modes: "phonetic" , "frame", "checkers" , and "full".
-    user.flex_mouse_grid_startup_mode = "checkers"
+    user.flex_mouse_grid_startup_mode = "frame"
