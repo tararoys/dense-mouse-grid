@@ -1,5 +1,6 @@
 # Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily
-# edited by Tara, and again heavily modified by brollin.
+# edited by Tara. Finally, again heavily modified by brollin. Stole a lot of ideas from screen-spots
+# by Andrew.
 import typing
 from talon import actions, canvas, Context, ctrl, Module, registry, ui, storage
 from talon.skia import Paint, Rect
@@ -15,13 +16,14 @@ class FlexStorage:
         storage.set("flex-mouse-grid", self.flex_storage)
 
     def save(self, points_map) -> None:
-        # self.flex_storage[actions.app.name()] = points_map
-        self.flex_storage["global"] = points_map
+        self.flex_storage[actions.app.name()] = points_map
         storage.set("flex-mouse-grid", self.flex_storage)
 
     def load(self):
-        self.flex_storage = storage.get("flex-mouse-grid", {"global": {}})
-        return self.flex_storage["global"]
+        if actions.app.name() in self.flex_storage:
+            return self.flex_storage[actions.app.name()]
+
+        return {}
 
 
 def hx(v: int) -> str:
@@ -216,8 +218,6 @@ class FlexMouseGrid:
         # get informaition on number and size of screens
         screens = ui.screens()
 
-        # print(actions.app.name())
-
         # each if block here might set the rect to None to indicate failure
         # rect contains position, height, and width of the canvas
         if rect is not None:
@@ -272,17 +272,6 @@ class FlexMouseGrid:
         self.mcanvas.freeze()
 
     def show_grid(self):
-
-        # if eye_zoom_mouse.zoom_mouse.enabled:
-        #     self.was_zoom_mouse_active = True
-        #     eye_zoom_mouse.toggle_zoom_mouse(False)
-        # if eye_mouse.control_mouse.enabled:
-        #     self.was_control_mouse_active = True
-        #     eye_mouse.control_mouse.toggle()
-
-        # self.bg_transparency = self.saved_bg_transparency
-        # self.label_transparency = self.saved_label_transparency
-
         self.grid_showing = True
         self.redraw()
 
@@ -302,11 +291,6 @@ class FlexMouseGrid:
 
         self.hide_grid()
         self.input_so_far = ""
-
-        # if self.was_control_mouse_active and not eye_mouse.control_mouse.enabled:
-        #     eye_mouse.control_mouse.toggle()
-        # if self.was_zoom_mouse_active and not eye_zoom_mouse.zoom_mouse.enabled:
-        #     eye_zoom_mouse.toggle_zoom_mouse(True)
 
         self.was_zoom_mouse_active = False
         self.was_control_mouse_active = False
@@ -850,6 +834,11 @@ class FlexMouseGrid:
             self.points_showing = onoff
         else:
             self.points_showing = not self.points_showing
+
+        # load application-specific points_map
+        if self.points_showing:
+            self.points_map = self.storage.load()
+
         self.redraw()
 
 

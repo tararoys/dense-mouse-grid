@@ -29,16 +29,15 @@ settings():
     # roman' for a serif font, and 'lucida sans typewriter' for a monospace font.
     user.flex_mouse_grid_font = 'arial rounded mt'
 
-
     ## ----------- Size setting
-.
+
     # This ajusts the sizing of everything.
     user.flex_mouse_grid_field_size = "30"
 
     ## ----------- Overlay transparency settings
 
     # Sets the transparency of the large grid squares
-    user.flex_mouse_grid_superblock_transparency = "0x20"
+    user.flex_mouse_grid_superblock_transparency = "0x10"
 
     # Sets the transparency of the small blocks
     user.flex_mouse_grid_label_transparency = "0x77"
