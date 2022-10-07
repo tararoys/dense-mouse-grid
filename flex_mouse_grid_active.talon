@@ -57,8 +57,8 @@ grid phonetic: user.flex_grid_phonetic()
 grid full: user.flex_grid_full()
 
 # Make the grid blocks larger.
-grid (bigger | larger): user.flex_grid_adjust_size(5)
-grid (bigger | larger) bump: user.flex_grid_adjust_size(1)
+grid bigger: user.flex_grid_adjust_size(5)
+grid bigger bump: user.flex_grid_adjust_size(1)
 
 # Make the grib blocks smaller.
 grid smaller: user.flex_grid_adjust_size(-5)
