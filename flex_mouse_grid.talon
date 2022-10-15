@@ -19,8 +19,8 @@ remap:
     user.flex_grid_points_toggle(1)
 map <user.word>: user.flex_grid_map_point_here(word)
 map <user.word> <user.letter>+: user.flex_grid_map_points_by_letter(word, letter_list)
-map <user.word> box <number>: user.flex_grid_map_points_by_box(word, number_list)
-map <user.word> box <number> and <number>: user.flex_grid_map_points_by_box(word, number_list)
+map <user.word> box <number> [mark <number>]*: user.flex_grid_map_points_by_box(word, number_list)
+map <user.word> box <number> past <number>: user.flex_grid_map_points_by_box_range(word, number_list)
 unmap <user.word>: user.flex_grid_unmap_point(word)
 unmap everything: user.flex_grid_unmap_point("")
 

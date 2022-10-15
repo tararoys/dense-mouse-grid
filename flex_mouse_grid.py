@@ -832,12 +832,28 @@ class FlexMouseGrid:
             points.append(Point2d(box_center.x, box_center.y))
 
         self.points_map[point_name] = points
-
         self.save_points()
 
         self.points_showing = True
         self.boxes_showing = False
         self.redraw()
+
+    def map_new_points_by_box_range(self, point_name, box_number_range):
+        self.reset_window_context()
+
+        if len(box_number_range) != 2:
+            print("cannot find box range with input:", box_number_range)
+            return
+
+        # allow doing ranges in reverse
+        if box_number_range[0] < box_number_range[1]:
+            box_number_list = list(range(box_number_range[0], box_number_range[1] + 1))
+        else:
+            box_number_list = list(
+                range(box_number_range[0], box_number_range[1] - 1, -1)
+            )
+
+        self.map_new_points_by_box(point_name, box_number_list)
 
     def unmap_point(self, point_name):
         self.reset_window_context()
@@ -1108,8 +1124,14 @@ class GridActions:
         mg.map_new_points_by_letter(point_name, letter_list)
 
     def flex_grid_map_points_by_box(point_name: str, box_number_list: typing.List[int]):
-        """Map a new point or points by box number"""
+        """Map a new point or points by box number(s)"""
         mg.map_new_points_by_box(point_name, box_number_list)
+
+    def flex_grid_map_points_by_box_range(
+        point_name: str, box_number_list: typing.List[int]
+    ):
+        """Map a new point or points by box number range"""
+        mg.map_new_points_by_box_range(point_name, box_number_list)
 
     def flex_grid_unmap_point(point_name: str):
         """Unmap a point or all points"""
