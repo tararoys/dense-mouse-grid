@@ -7,6 +7,7 @@ from talon.skia import Paint, Rect, Image
 from talon.types.point import Point2d
 
 import string
+import time
 import cv2
 import numpy as np
 import subprocess
@@ -164,6 +165,10 @@ class FlexMouseGrid:
 
         self.boxes = []
         self.boxes_showing = False
+
+        self.thresh2 = 25
+        self.box_size_lower = 31
+        self.box_size_upper = 400
 
     def add_partial_input(self, letter: str):
         # this logic changes which superblock is selected
@@ -884,8 +889,37 @@ class FlexMouseGrid:
         ctrl.mouse_move(self.rect.x + point.x, self.rect.y + point.y)
         self.redraw()
 
+    def mouse_click(self, mouse_button):
+        if mouse_button >= 0:
+            ctrl.mouse_click(button=mouse_button, down=True)
+            time.sleep(0.05)
+            ctrl.mouse_click(button=mouse_button, up=True)
+
+    def temporarily_hide_everything(self):
+        self.saved_visibility = (
+            self.points_showing,
+            self.boxes_showing,
+            self.grid_showing,
+        )
+        if self.points_showing or self.boxes_showing or self.grid_showing:
+            self.points_showing = False
+            self.boxes_showing = False
+            self.grid_showing = False
+            self.redraw()
+            time.sleep(0.1)
+
+    def restore_everything(self):
+        p, b, g = self.saved_visibility
+        self.points_showing = p
+        self.boxes_showing = b
+        self.grid_showing = g
+
     def find_boxes(self):
         self.reset_window_context()
+
+        # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
+        self.temporarily_hide_everything()
+        self.redraw()
 
         # find boxes by first applying a threshold filter to the grayscale window
         img = np.array(screen.capture_rect(self.rect))
@@ -894,8 +928,7 @@ class FlexMouseGrid:
         # this threshold wasn't finding any contours
         # _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
         # apply a threshold for the dark mode case
-        _, thresh2 = cv2.threshold(gray, 25, 255, cv2.THRESH_BINARY)
-        # _, thresh2 = cv2.threshold(gray, 38, 255, cv2.THRESH_BINARY)
+        _, thresh2 = cv2.threshold(gray, self.thresh2, 255, cv2.THRESH_BINARY)
 
         # view_image(thresh, "thresh")
         # view_image(thresh2, "thresh2")
@@ -919,7 +952,11 @@ class FlexMouseGrid:
         # for c in contours + contours2:
         for c in contours2:
             (x, y, w, h) = cv2.boundingRect(c)
-            if (w >= 31 and w < 400) and (h > 31 and h < 400) and abs(w - h) < 0.4 * w:
+            if (
+                (w >= self.box_size_lower and w < self.box_size_upper)
+                and (h > self.box_size_lower and h < self.box_size_upper)
+                and abs(w - h) < 0.4 * w
+            ):
                 all_boxes.append(ui.Rect(x, y, w, h))
 
         # print("found boxes", len(all_boxes))
@@ -944,6 +981,7 @@ class FlexMouseGrid:
                 self.boxes.append(box1)
 
         # print("after omissions", len(self.boxes))
+        self.restore_everything()
         self.boxes_showing = True
         self.redraw()
 
@@ -1137,9 +1175,10 @@ class GridActions:
         """Unmap a point or all points"""
         mg.unmap_point(point_name)
 
-    def flex_grid_go_to_point(point_name: str, index: int):
-        """Go to a point"""
+    def flex_grid_go_to_point(point_name: str, index: int, mouse_button: int):
+        """Go to a point, optionally click it"""
         mg.go_to_point(point_name, index)
+        mg.mouse_click(mouse_button)
 
     # BOXES
     def flex_grid_boxes_toggle(onoff: int):

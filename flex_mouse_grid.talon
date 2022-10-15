@@ -7,11 +7,14 @@ flex grid screen <number>: user.flex_grid_select_screen(number)
 [flex] grid close:
     user.flex_grid_deactivate()
     user.flex_grid_points_toggle(0)
+    user.flex_grid_boxes_toggle(0)
 
 # Points
 points: user.flex_grid_points_toggle(1)
 points close: user.flex_grid_points_toggle(0)
-point <user.word> [<number>]: user.flex_grid_go_to_point(word, number or 1)
+point <user.word> [<number>]: user.flex_grid_go_to_point(word, number or 1, -1)
+point click <user.word> [<number>]: user.flex_grid_go_to_point(word, number or 1, 0)
+point righty <user.word> [<number>]: user.flex_grid_go_to_point(word, number or 1, 1)
 
 # Points mapping
 remap:
