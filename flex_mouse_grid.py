@@ -166,7 +166,7 @@ class FlexMouseGrid:
         self.boxes = []
         self.boxes_showing = False
 
-        self.thresh2 = 25
+        self.thresh = 25
         self.box_size_lower = 31
         self.box_size_upper = 400
 
@@ -906,7 +906,7 @@ class FlexMouseGrid:
             self.boxes_showing = False
             self.grid_showing = False
             self.redraw()
-            time.sleep(0.1)
+            time.sleep(0.05)
 
     def restore_everything(self):
         p, b, g = self.saved_visibility
@@ -919,38 +919,23 @@ class FlexMouseGrid:
 
         # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
         self.temporarily_hide_everything()
-        self.redraw()
 
         # find boxes by first applying a threshold filter to the grayscale window
         img = np.array(screen.capture_rect(self.rect))
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        # this threshold wasn't finding any contours
-        # _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
-        # apply a threshold for the dark mode case
-        _, thresh2 = cv2.threshold(gray, self.thresh2, 255, cv2.THRESH_BINARY)
-
+        _, thresh = cv2.threshold(gray, self.thresh, 255, cv2.THRESH_BINARY)
         # view_image(thresh, "thresh")
-        # view_image(thresh2, "thresh2")
 
         # use a close morphology transform to filter out thin lines
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
-        # morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-        morph2 = cv2.morphologyEx(thresh2, cv2.MORPH_CLOSE, kernel)
-
+        morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
         # view_image(morph, "morph")
-        # view_image(morph2, "morph2")
 
         # now search all of the contours for small square-ish things
-        # contours, _ = cv2.findContours(morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        contours2, _ = cv2.findContours(morph2, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-        # print("found contours", len(contours2))
-        # print("found contours", len(contours + contours2))
+        contours, _ = cv2.findContours(morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         all_boxes = []
-        # for c in contours + contours2:
-        for c in contours2:
+        for c in contours:
             (x, y, w, h) = cv2.boundingRect(c)
             if (
                 (w >= self.box_size_lower and w < self.box_size_upper)
@@ -970,8 +955,8 @@ class FlexMouseGrid:
                 box1center = box1.center
                 box2center = box2.center
                 if (
-                    abs(box1center.x - box2center.x) < 35
-                    and abs(box1center.y - box2center.y) < 35
+                    abs(box1center.x - box2center.x) < self.box_size_lower
+                    and abs(box1center.y - box2center.y) < self.box_size_lower
                 ):
                     # omit this box since its center is nearby another box's center
                     omit = True
