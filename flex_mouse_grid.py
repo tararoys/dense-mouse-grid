@@ -2,11 +2,14 @@
 # edited by Tara. Finally, again heavily modified by brollin. Stole a lot of ideas from screen-spots
 # by Andrew.
 import typing
-from talon import actions, canvas, Context, ctrl, Module, registry, ui, storage
-from talon.skia import Paint, Rect
+from talon import actions, canvas, Context, ctrl, Module, registry, ui, storage, screen
+from talon.skia import Paint, Rect, Image
 from talon.types.point import Point2d
 
 import string
+import cv2
+import numpy as np
+import subprocess
 
 
 class FlexStorage:
@@ -119,6 +122,12 @@ setting_flex_grid_font = mod.setting(
 ctx = Context()
 
 
+def view_image(image_array, name):
+    # open the image (macOS only)
+    Image.from_array(image_array).write_file(f"/tmp/{name}.jpg")
+    subprocess.run(("open", f"/tmp/{name}.jpg"))
+
+
 class FlexMouseGrid:
     def __init__(self):
         self.screen = None
@@ -127,8 +136,6 @@ class FlexMouseGrid:
         self.mcanvas = None
         self.active = False
         self.grid_showing = False
-        self.was_control_mouse_active = False
-        self.was_zoom_mouse_active = False
         self.columns = 0
         self.rows = 0
 
@@ -154,6 +161,9 @@ class FlexMouseGrid:
 
         self.storage = FlexStorage()
         self.points_map = self.storage.load()
+
+        self.boxes = []
+        self.boxes_showing = False
 
     def add_partial_input(self, letter: str):
         # this logic changes which superblock is selected
@@ -251,9 +261,6 @@ class FlexMouseGrid:
         self.active = True
         self.grid_showing = False
 
-        self.was_control_mouse_active = False
-        self.was_zoom_mouse_active = False
-
         self.superblocks = []
         self.selected_superblock = 0
 
@@ -291,9 +298,6 @@ class FlexMouseGrid:
 
         self.hide_grid()
         self.input_so_far = ""
-
-        self.was_zoom_mouse_active = False
-        self.was_control_mouse_active = False
 
         self.active = False
 
@@ -696,7 +700,6 @@ class FlexMouseGrid:
                     canvas.draw_text(text_string, background_rect.x, background_rect.y)
 
         def draw_point_labels():
-
             canvas.paint.text_align = canvas.paint.TextAlign.LEFT
             canvas.paint.textsize = int(self.field_size * 3 / 5)
 
@@ -728,6 +731,34 @@ class FlexMouseGrid:
                     canvas.paint.color = "ffffff"
                     canvas.draw_circle(point.x, point.y, 2)
 
+        def draw_boxes():
+            canvas.paint.text_align = canvas.paint.TextAlign.LEFT
+            canvas.paint.textsize = int(self.field_size * 3 / 5)
+
+            for index, box in enumerate(self.boxes):
+                point_label = str(index)
+                text_rect = canvas.paint.measure_text(point_label)[1]
+                background_rect = text_rect.copy()
+                background_rect.x = box.x + 1
+                background_rect.y = box.y + box.height - 2 - text_rect.height
+                canvas.paint.color = "000000ff"
+                canvas.paint.style = Paint.Style.FILL
+                canvas.draw_rect(background_rect)
+
+                canvas.paint.color = setting_small_letters_color.get()
+                canvas.draw_text(
+                    point_label,
+                    box.x + 1,
+                    box.y + box.height - 2,
+                )
+
+                # draw border of label box
+                canvas.paint.color = "ff00ff"
+                canvas.paint.style = Paint.Style.STROKE
+                canvas.draw_rect(box)
+
+                canvas.paint.style = Paint.Style.FILL
+
         if self.grid_showing:
             draw_superblock()
             draw_text()
@@ -739,10 +770,35 @@ class FlexMouseGrid:
         if self.points_showing:
             draw_point_labels()
 
+        if self.boxes_showing:
+            draw_boxes()
+
     def save_points(self):
         self.storage.save(self.points_map)
 
-    def map_new_points(self, point_name, spoken_letters):
+    def reset_window_context(self):
+        # load the points map for the current active window
+        self.points_map = self.storage.load()
+
+        # reset our rectangle to capture the active window
+        self.rect = ui.active_window().rect.copy()
+
+    def map_new_point_here(self, point_name):
+        self.reset_window_context()
+
+        x, y = ctrl.mouse_pos()
+
+        # points are always relative to canvas
+        self.points_map[point_name] = [Point2d(x - self.rect.x, y - self.rect.y)]
+
+        self.save_points()
+
+        self.points_showing = True
+        self.redraw()
+
+    def map_new_points_by_letter(self, point_name, spoken_letters):
+        self.reset_window_context()
+
         if len(spoken_letters) % 2 != 0:
             print("uneven number of letters supplied")
             return
@@ -763,7 +819,29 @@ class FlexMouseGrid:
         self.points_showing = True
         self.redraw()
 
+    def map_new_points_by_box(self, point_name, box_number_list):
+        self.reset_window_context()
+
+        points = []
+        for box_number in box_number_list:
+            if box_number >= len(self.boxes):
+                print("box does not exist:", box_number)
+                continue
+
+            box_center = self.boxes[box_number].center
+            points.append(Point2d(box_center.x, box_center.y))
+
+        self.points_map[point_name] = points
+
+        self.save_points()
+
+        self.points_showing = True
+        self.boxes_showing = False
+        self.redraw()
+
     def unmap_point(self, point_name):
+        self.reset_window_context()
+
         if point_name == "":
             self.points_map = {}
             self.save_points()
@@ -779,6 +857,8 @@ class FlexMouseGrid:
         self.redraw()
 
     def go_to_point(self, point_name, index):
+        self.reset_window_context()
+
         if point_name not in self.points_map:
             print("point", point_name, "not found")
             return
@@ -786,6 +866,81 @@ class FlexMouseGrid:
         # points are always relative to canvas
         point = self.points_map[point_name][index - 1]
         ctrl.mouse_move(self.rect.x + point.x, self.rect.y + point.y)
+        self.redraw()
+
+    def find_boxes(self):
+        self.reset_window_context()
+
+        # find boxes by first applying a threshold filter to the grayscale window
+        img = np.array(screen.capture_rect(self.rect))
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # this threshold wasn't finding any contours
+        # _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
+        # apply a threshold for the dark mode case
+        _, thresh2 = cv2.threshold(gray, 25, 255, cv2.THRESH_BINARY)
+        # _, thresh2 = cv2.threshold(gray, 38, 255, cv2.THRESH_BINARY)
+
+        # view_image(thresh, "thresh")
+        # view_image(thresh2, "thresh2")
+
+        # use a close morphology transform to filter out thin lines
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
+        # morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        morph2 = cv2.morphologyEx(thresh2, cv2.MORPH_CLOSE, kernel)
+
+        # view_image(morph, "morph")
+        # view_image(morph2, "morph2")
+
+        # now search all of the contours for small square-ish things
+        # contours, _ = cv2.findContours(morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours2, _ = cv2.findContours(morph2, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        # print("found contours", len(contours2))
+        # print("found contours", len(contours + contours2))
+
+        all_boxes = []
+        # for c in contours + contours2:
+        for c in contours2:
+            (x, y, w, h) = cv2.boundingRect(c)
+            if (w >= 31 and w < 400) and (h > 31 and h < 400) and abs(w - h) < 0.4 * w:
+                all_boxes.append(ui.Rect(x, y, w, h))
+
+        # print("found boxes", len(all_boxes))
+
+        # filter boxes that are too similar to each other
+        self.boxes = []
+        for i, box1 in enumerate(all_boxes):
+            omit = False
+            for j in range(i + 1, len(all_boxes)):
+                box2 = all_boxes[j]
+                box1center = box1.center
+                box2center = box2.center
+                if (
+                    abs(box1center.x - box2center.x) < 35
+                    and abs(box1center.y - box2center.y) < 35
+                ):
+                    # omit this box since its center is nearby another box's center
+                    omit = True
+                    break
+
+            if not omit:
+                self.boxes.append(box1)
+
+        # print("after omissions", len(self.boxes))
+        self.boxes_showing = True
+        self.redraw()
+
+    def go_to_box(self, box_number):
+        if box_number >= len(self.boxes):
+            print("box number does not exist")
+            return
+
+        box = self.boxes[box_number]
+        ctrl.mouse_move(self.rect.x + box.center.x, self.rect.y + box.center.y)
+
+        self.boxes_showing = False
+        self.redraw()
 
     def get_label_position(self, spoken_letters, number=-1, relative=False):
         base_rect = self.superblocks[number].copy()
@@ -830,14 +985,20 @@ class FlexMouseGrid:
         self.redraw()
 
     def toggle_points(self, onoff=None):
+        self.reset_window_context()
+
         if onoff is not None:
             self.points_showing = onoff
         else:
             self.points_showing = not self.points_showing
 
-        # load application-specific points_map
-        if self.points_showing:
-            self.points_map = self.storage.load()
+        self.redraw()
+
+    def toggle_boxes(self, onoff=None):
+        if onoff is not None:
+            self.boxes_showing = onoff
+        else:
+            self.boxes_showing = not self.boxes_showing
 
         self.redraw()
 
@@ -912,10 +1073,6 @@ class GridActions:
         """Show or hide rulers all around the window"""
         mg.toggle_rulers()
 
-    def flex_grid_points_toggle(onoff: int):
-        """Show or hide mapped points"""
-        mg.toggle_points(onoff=onoff == 1)
-
     def flex_grid_adjust_bg_transparency(amount: int):
         """Increase or decrease the opacity of the background of the flex mouse grid (also returns new value)"""
         mg.adjust_bg_transparency(amount)
@@ -937,9 +1094,22 @@ class GridActions:
         mg.input_so_far = ""
         mg.add_partial_input(str(letter))
 
-    def flex_grid_map_point(point_name: str, letter_list: typing.List[str]):
-        """Map a new point"""
-        mg.map_new_points(point_name, letter_list)
+    # POINTS
+    def flex_grid_points_toggle(onoff: int):
+        """Show or hide mapped points"""
+        mg.toggle_points(onoff=onoff == 1)
+
+    def flex_grid_map_point_here(point_name: str):
+        """Map a new point where the mouse cursor currently is"""
+        mg.map_new_point_here(point_name)
+
+    def flex_grid_map_points_by_letter(point_name: str, letter_list: typing.List[str]):
+        """Map a new point or points by letter coordinates"""
+        mg.map_new_points_by_letter(point_name, letter_list)
+
+    def flex_grid_map_points_by_box(point_name: str, box_number_list: typing.List[int]):
+        """Map a new point or points by box number"""
+        mg.map_new_points_by_box(point_name, box_number_list)
 
     def flex_grid_unmap_point(point_name: str):
         """Unmap a point or all points"""
@@ -948,3 +1118,16 @@ class GridActions:
     def flex_grid_go_to_point(point_name: str, index: int):
         """Go to a point"""
         mg.go_to_point(point_name, index)
+
+    # BOXES
+    def flex_grid_boxes_toggle(onoff: int):
+        """Show or hide boxes"""
+        mg.toggle_boxes(onoff=onoff == 1)
+
+    def flex_grid_find_boxes():
+        """Find all boxes, label with hence"""
+        mg.find_boxes()
+
+    def flex_grid_go_to_box(box_number: int):
+        """Go to a box"""
+        mg.go_to_box(box_number)

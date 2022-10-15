@@ -9,7 +9,7 @@ flex grid screen <number>: user.flex_grid_select_screen(number)
     user.flex_grid_points_toggle(0)
 
 # Points
-flex points: user.flex_grid_points_toggle(1)
+points: user.flex_grid_points_toggle(1)
 points close: user.flex_grid_points_toggle(0)
 point <user.word> [<number>]: user.flex_grid_go_to_point(word, number or 1)
 
@@ -17,6 +17,14 @@ point <user.word> [<number>]: user.flex_grid_go_to_point(word, number or 1)
 remap:
     user.flex_grid_place_window()
     user.flex_grid_points_toggle(1)
-map <user.word> <user.letter>+: user.flex_grid_map_point(word, letter_list)
+map <user.word>: user.flex_grid_map_point_here(word)
+map <user.word> <user.letter>+: user.flex_grid_map_points_by_letter(word, letter_list)
+map <user.word> box <number>: user.flex_grid_map_points_by_box(word, number_list)
+map <user.word> box <number> and <number>: user.flex_grid_map_points_by_box(word, number_list)
 unmap <user.word>: user.flex_grid_unmap_point(word)
-unmap all: user.flex_grid_unmap_point("")
+unmap everything: user.flex_grid_unmap_point("")
+
+# Boxes
+boxes: user.flex_grid_find_boxes()
+box <number>: user.flex_grid_go_to_box(number or 1)
+boxes close: user.flex_grid_boxes_toggle(0)
