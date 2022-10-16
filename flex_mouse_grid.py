@@ -1,11 +1,11 @@
 # Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily
 # edited by Tara. Finally, again heavily modified by brollin. Stole a lot of ideas from screen-spots
 # by Andrew.
-import typing
 from talon import actions, canvas, Context, ctrl, Module, registry, ui, storage, screen
 from talon.skia import Paint, Rect, Image
 from talon.types.point import Point2d
 
+import typing
 import string
 import time
 import cv2
