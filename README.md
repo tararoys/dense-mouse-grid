@@ -2,10 +2,10 @@
 
 A hands-free mouse grid by Ben Rollin, Tara Roys, timotimo, and aegis, for use with the [Talon voice framework](https://talonvoice.com/). Flex Mouse Grid is just the latest in a series of iterations, and was built on top of [Dense Mouse Grid](https://github.com/tararoys/dense-mouse-grid).
 
-You can think of Flex Mouse Grid as extending the functionality of Dense Mouse Grid, attempting to be an all-in-one voice mouse tool. Some notable differences from Dense Mouse Grid:
+You can think of Flex Mouse Grid as extending the functionality of Dense Mouse Grid, attempting to be an even more flexible, all-in-one voice mouse tool. Some notable differences from Dense Mouse Grid:
 
 - "Points" mapping. Essentially incorporating Andrew Dant's awesome [screen-spots](https://github.com/AndrewDant/screen-spots) tool and adding a light UI. It allows points to be saved on an application-specific basis with a custom name. Example: `point click continue` to click a saved point called "continue".
-- "Box" detection. Use image processing techniques to detect boxes on the screen, identifying them and allowing you to click them. You can also save boxes as points. Example: `boxes` to identify all boxes on the screen, `box click seven` to click the box labeled "7".
+- "Box" detection. Use image processing techniques to detect boxes on the screen, identifying them and allowing you to click them. You can also save boxes as points. Example: `boxes` to identify all boxes in the active window, and then `box click seven` to click the box labeled "7".
 
 ## Installation
 
@@ -20,6 +20,18 @@ You can think of Flex Mouse Grid as extending the functionality of Dense Mouse G
 ```
 
 5. Restart Talon.
+
+## Learning to use the tool
+
+If you are just interested in the dense mouse grid features, you may consider just using the simpler [Dense Mouse Grid](https://github.com/tararoys/dense-mouse-grid). Otherwise, you can read the following sections on [Points](#points), [Boxes](#boxes), and finally [Dense Mouse Grid](#dense-mouse-grid-details) to learn about the core features of this tool.
+
+## Points
+
+todo
+
+## Boxes
+
+todo
 
 ## Dense Mouse Grid details
 
@@ -42,13 +54,13 @@ This is the "dense mouse grid". It fills the screen with fields that can be reac
 
 The grid will appear in Frame Mode by default. Say:
 
-`cap bat`
+- `cap bat`
 
 This will move the cursor to row "c" and column "b". You can include a number to move the cursor to another block (`3 drum wax`). To click, use whatever voice command you have associated with clicking. By default in knausj_talon, this is `touch`.
 
 ### Changing your mind
 
-If you have selected the wrong number, you can choose a different number anytime. If you have selected the wrong row, you can say 'row' and then a letter, and it will move the highlighed row to that letter. So saying
+If you have selected the wrong number, you can choose a different number anytime. If you have selected the wrong row, you can say `row <letter>`, and it will move the highlighed row to that letter. So saying
 
 - `one`
 - `harp`
@@ -56,13 +68,6 @@ If you have selected the wrong number, you can choose a different number anytime
 - `cap`
 
 will result in moving the cursor to coordinate 1 B C.
-
-### Grid size
-
-- `grid bigger`
-- `grid smaller`
-
-You can adjust the size by a smaller amount by including `bump`, e.g. `grid bigger bump`. The default size of the grid can be set in `flex_mouse_settings.talon` by changing the number in `user.flex_mouse_grid_field_size = "30"`.
 
 ### More modes
 
@@ -72,6 +77,15 @@ If frame mode does not suit you, there are two other modes that can be used to s
 - `grid full` shows every possible coordinate.
 - `grid phonetic` switch to phonetic mode, which is just like frame mode except with full phonetic words labeling the rows and columns instead of individual letters.
 - `grid frame` switches to frame mode (the default).
+
+### Grid size
+
+- `grid bigger`
+- `grid smaller`
+
+You can adjust the size by a smaller amount by including `bump`, e.g. `grid bigger bump`.
+
+The default size of the grid can be set in `flex_mouse_settings.talon` by changing the number in `user.flex_mouse_grid_field_size = "30"`.
 
 ### Grid visibility
 
