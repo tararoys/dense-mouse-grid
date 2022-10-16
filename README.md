@@ -65,13 +65,13 @@ For inaccessible programs such as some games where there are visually distinguis
 
 Lets take as an example this set of boxes from a game:
 
-![image](./images/normal.png)
+![image](images/normal.png)
 
 ### Finding boxes
 
 - `boxes` finds boxes using the current window's box detection configuration, labeling each with a number
 
-![image](./images/boxes.png)
+![image](images/boxes.png)
 
 ### Moving to/click boxes
 
@@ -94,17 +94,17 @@ Make sure to learn about [Points](#points) first.
 
 So if we said `boxes` and saw:
 
-![image](./images/boxes.png)
+![image](images/boxes.png)
 
 We could say `map sprint box five` to create a point there:
 
-![image](./images/sprint.png)
+![image](images/sprint.png)
 
 Then we can simply move to the "sprint" button with the phrase `point sprint`
 
 Further, maybe we just want to refer to all of these boxes as actions. We could say a command like: `map act box thirteen past three` which would create a point list as seen below:
 
-![image](./images/acts.png)
+![image](images/acts.png)
 
 It may be a little hard to tell what's going on, but each box got put in a point list with label "act". We could then move our cursor to the same "sprint" button with the following: `point act nine`.
 
