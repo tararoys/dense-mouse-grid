@@ -47,14 +47,6 @@ Flex mouse grid allows saving "points" which are just labeled points on the scre
 - `point click <word>` clicks the point labeled "word"
 - `point righty <word>` right clicks the point labeled "word"
 
-### Mapping boxes as points
-
-Make sure to learn about [Boxes](#boxes) first.
-
-- `map <word> box <number>` creates a new point at the center of the chosen box labeled "word"
-- `map <word> box <number1> mark <number2>...` creates a point list of two points. You can include more points by including more `mark <number>`s.
-- `map <word> box <number1> past <number2>` creates a point list that will include a list for every box in the range between "box number1" and "box number2". Can also be done in reverse.
-
 ### Point lists
 
 This is a list of points all with the same label. You can move to/click the third point in a point list simply with
@@ -71,9 +63,15 @@ TODO
 
 For inaccessible programs such as some games where there are visually distinguishable boxes which you would like a quick way to click, there is the boxes feature of flex mouse grid. It attempts to identify boxes with computer vision/image processing, and labels the boxes that it found, allowing you to interact with them.
 
+Lets take as an example this set of boxes from a game:
+
+![image](./images/normal.png)
+
 ### Finding boxes
 
 - `boxes` finds boxes using the current window's box detection configuration, labeling each with a number
+
+![image](./images/boxes.png)
 
 ### Moving to/click boxes
 
@@ -85,6 +83,30 @@ For inaccessible programs such as some games where there are visually distinguis
 
 - `boxes close` hides all boxes
 - `grid close` hides all boxes, all points, and the dense grid
+
+### Mapping boxes as points
+
+Make sure to learn about [Points](#points) first.
+
+- `map <word> box <number>` creates a new point at the center of the chosen box labeled "word"
+- `map <word> box <number1> mark <number2>...` creates a point list of two points. You can include more points by including more `mark <number>`s.
+- `map <word> box <number1> past <number2>` creates a point list that will include a list for every box in the range between "box number1" and "box number2". Can also be done in reverse.
+
+So if we said `boxes` and saw:
+
+![image](./images/boxes.png)
+
+We could say `map sprint box five` to create a point there:
+
+![image](./images/sprint.png)
+
+Then we can simply move to the "sprint" button with the phrase `point sprint`
+
+Further, maybe we just want to refer to all of these boxes as actions. We could say a command like: `map act box thirteen past three` which would create a point list as seen below:
+
+![image](./images/acts.png)
+
+It may be a little hard to tell what's going on, but each box got put in a point list with label "act". We could then move our cursor to the same "sprint" button with the following: `point act nine`.
 
 ### Finding more boxes
 
