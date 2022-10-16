@@ -29,5 +29,15 @@ unmap everything: user.flex_grid_unmap_point("")
 
 # Boxes
 boxes: user.flex_grid_find_boxes()
-box <number>: user.flex_grid_go_to_box(number or 1)
+box <number>: user.flex_grid_go_to_box(number or 1, -1)
+box click <number>: user.flex_grid_go_to_box(number or 1, 0)
+box righty <number>: user.flex_grid_go_to_box(number or 1, 1)
 boxes close: user.flex_grid_boxes_toggle(0)
+
+# Box detection configuration
+boxes upper more: user.flex_grid_box_config_change("box_size_upper", 3)
+boxes upper less: user.flex_grid_box_config_change("box_size_upper", -3)
+boxes lower more: user.flex_grid_box_config_change("box_size_lower", 3)
+boxes lower less: user.flex_grid_box_config_change("box_size_lower", -3)
+boxes threshold more: user.flex_grid_box_config_change("threshold", 10)
+boxes threshold less: user.flex_grid_box_config_change("threshold", -10)

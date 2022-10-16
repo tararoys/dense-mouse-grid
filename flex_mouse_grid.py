@@ -13,21 +13,21 @@ import numpy as np
 import subprocess
 
 
-class FlexStorage:
-    flex_storage = storage.get("flex-mouse-grid", {"global": {}})
+class FlexStore:
+    def __init__(self, id: str, default):
+        self.id = f"flex-mouse-grid.{id}"
+        self.default = default
+        self.flex_storage = storage.get(self.id, default)
 
-    def backup(self) -> None:
-        storage.set("flex-mouse-grid", self.flex_storage)
-
-    def save(self, points_map) -> None:
-        self.flex_storage[actions.app.name()] = points_map
-        storage.set("flex-mouse-grid", self.flex_storage)
+    def save(self, app_data) -> None:
+        self.flex_storage[actions.app.name()] = app_data.copy()
+        storage.set(self.id, self.flex_storage)
 
     def load(self):
         if actions.app.name() in self.flex_storage:
             return self.flex_storage[actions.app.name()]
 
-        return {}
+        return self.default
 
 
 def hx(v: int) -> str:
@@ -136,9 +136,12 @@ class FlexMouseGrid:
         self.history = []
         self.mcanvas = None
         self.active = False
-        self.grid_showing = False
         self.columns = 0
         self.rows = 0
+        self.superblocks = []
+        self.selected_superblock = 0
+        self.checkers = False
+        self.input_so_far = ""
 
         # configured via settings
         self.field_size = 20
@@ -149,26 +152,27 @@ class FlexMouseGrid:
         self.saved_label_transparency = 0x99
         self.saved_bg_transparency = 0x99
 
-        self.superblocks = []
-
-        self.selected_superblock = 0
-
-        self.rulers = False
+        # visibility flags
+        self.grid_showing = False
+        self.rulers_showing = False
         self.points_showing = False
-
-        self.checkers = False
-
-        self.input_so_far = ""
-
-        self.storage = FlexStorage()
-        self.points_map = self.storage.load()
-
-        self.boxes = []
         self.boxes_showing = False
 
-        self.thresh = 25
-        self.box_size_lower = 31
-        self.box_size_upper = 400
+        # points
+        self.points_map_store = FlexStore("points", {})
+        self.points_map = self.points_map_store.load()
+
+        # boxes
+        self.box_config_store = FlexStore(
+            "box_config",
+            {
+                "threshold": 25,
+                "box_size_lower": 31,
+                "box_size_upper": 400,
+            },
+        )
+        self.box_config = self.box_config_store.load()
+        self.boxes = []
 
     def add_partial_input(self, letter: str):
         # this logic changes which superblock is selected
@@ -269,7 +273,7 @@ class FlexMouseGrid:
         self.superblocks = []
         self.selected_superblock = 0
 
-        self.rulers = False
+        self.rulers_showing = False
         self.points_showing = False
 
         self.checkers = False
@@ -769,7 +773,7 @@ class FlexMouseGrid:
             draw_text()
             # draw_crosses()
 
-            if self.rulers:
+            if self.rulers_showing:
                 draw_rulers()
 
         if self.points_showing:
@@ -779,11 +783,15 @@ class FlexMouseGrid:
             draw_boxes()
 
     def save_points(self):
-        self.storage.save(self.points_map)
+        self.points_map_store.save(self.points_map)
+
+    def save_box_config(self):
+        self.box_config_store.save(self.box_config)
 
     def reset_window_context(self):
-        # load the points map for the current active window
-        self.points_map = self.storage.load()
+        # reload the stores for the current active window
+        self.points_map = self.points_map_store.load()
+        self.box_config = self.box_config_store.load()
 
         # reset our rectangle to capture the active window
         self.rect = ui.active_window().rect.copy()
@@ -917,13 +925,18 @@ class FlexMouseGrid:
     def find_boxes(self):
         self.reset_window_context()
 
+        # retrieve the app-specific box detection configuration
+        threshold = self.box_config["threshold"]
+        box_size_lower = self.box_config["box_size_lower"]
+        box_size_upper = self.box_config["box_size_upper"]
+
         # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
         self.temporarily_hide_everything()
 
         # find boxes by first applying a threshold filter to the grayscale window
         img = np.array(screen.capture_rect(self.rect))
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, self.thresh, 255, cv2.THRESH_BINARY)
+        _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
         # view_image(thresh, "thresh")
 
         # use a close morphology transform to filter out thin lines
@@ -938,8 +951,8 @@ class FlexMouseGrid:
         for c in contours:
             (x, y, w, h) = cv2.boundingRect(c)
             if (
-                (w >= self.box_size_lower and w < self.box_size_upper)
-                and (h > self.box_size_lower and h < self.box_size_upper)
+                (w >= box_size_lower and w < box_size_upper)
+                and (h > box_size_lower and h < box_size_upper)
                 and abs(w - h) < 0.4 * w
             ):
                 all_boxes.append(ui.Rect(x, y, w, h))
@@ -955,8 +968,8 @@ class FlexMouseGrid:
                 box1center = box1.center
                 box2center = box2.center
                 if (
-                    abs(box1center.x - box2center.x) < self.box_size_lower
-                    and abs(box1center.y - box2center.y) < self.box_size_lower
+                    abs(box1center.x - box2center.x) < box_size_lower
+                    and abs(box1center.y - box2center.y) < box_size_lower
                 ):
                     # omit this box since its center is nearby another box's center
                     omit = True
@@ -1020,7 +1033,7 @@ class FlexMouseGrid:
         self.redraw()
 
     def toggle_rulers(self):
-        self.rulers = not self.rulers
+        self.rulers_showing = not self.rulers_showing
         self.redraw()
 
     def toggle_points(self, onoff=None):
@@ -1174,6 +1187,13 @@ class GridActions:
         """Find all boxes, label with hence"""
         mg.find_boxes()
 
-    def flex_grid_go_to_box(box_number: int):
+    def flex_grid_go_to_box(box_number: int, mouse_button: int):
         """Go to a box"""
         mg.go_to_box(box_number)
+        mg.mouse_click(mouse_button)
+
+    def flex_grid_box_config_change(parameter: str, delta: int):
+        """Change box configuration parameter by delta"""
+        mg.box_config[parameter] += delta
+        mg.save_box_config()
+        mg.find_boxes()
