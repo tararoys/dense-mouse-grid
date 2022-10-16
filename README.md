@@ -49,7 +49,7 @@ Flex mouse grid allows saving "points" which are just labeled points on the scre
 
 ### Point lists
 
-This is a list of points all with the same label. You can move to/click the third point in a point list simply with
+(Relevant when [mapping boxes as points](#mapping-boxes-as-points)) This is a list of points all with the same label. You can move to/click the third point in a point list simply with
 
 - `point <word> three`
 
