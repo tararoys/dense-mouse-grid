@@ -116,14 +116,17 @@ There are three relevant parameters that are currently changeable:
 
 - `upper` box size upper bound
 - `lower` box size lower bound
-- `threshold` the filtering threshold. The higher the number, the darker that colors can be distinguished.
+- `threshold` the filtering threshold. The higher the number, the lighter that colors can be distinguished.
 
 You can modify these parameters on an application specific basis with the following commands:
 
 - `boxes <parameter> more`
 - `boxes <parameter> less`
 
-So e.g. `boxes upper more` would increase the maximum size that a box can be. After changing any parameter, boxes will be found again so you can gauge if it was a good change or not in real time.
+So e.g. `boxes upper more` would increase the maximum size that a box can be. After changing any parameter, boxes will be found again so you can gauge if it was a good change or not in real time. You can additionally modify parameters by a smaller amount with `bump`:
+
+- `boxes <parameter> more bump`
+- `boxes <parameter> less bump`
 
 ## Dense Mouse Grid details
 
