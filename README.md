@@ -27,11 +27,81 @@ If you are just interested in the dense mouse grid features, you may consider ju
 
 ## Points
 
-todo
+Flex mouse grid allows saving "points" which are just labeled points on the screen. They are always saved relative to the active window, so you can safely move a window around, and know that points will be unaffected.
+
+### Mapping/unmapping points
+
+- `map <word>` creates a new point at the current location of the mouse cursor with the label "word"
+- `unmap <word>` deletes the point labeled "word"
+- `unmap everything` deletes all points for the active window
+
+### Showing/hiding point labels
+
+- `points` shows all points for the current window
+- `points close` hides all points
+- `grid close` hides all points, all boxes, and the dense grid
+
+### Moving to/clicking points
+
+- `point <word>` moves to the point labeled "word"
+- `point click <word>` clicks the point labeled "word"
+- `point righty <word>` right clicks the point labeled "word"
+
+### Mapping boxes as points
+
+Make sure to learn about [Boxes](#boxes) first.
+
+- `map <word> box <number>` creates a new point at the center of the chosen box labeled "word"
+- `map <word> box <number1> mark <number2>...` creates a point list of two points. You can include more points by including more `mark <number>`s.
+- `map <word> box <number1> past <number2>` creates a point list that will include a list for every box in the range between "box number1" and "box number2". Can also be done in reverse.
+
+### Point lists
+
+This is a list of points all with the same label. You can move to/click the third point in a point list simply with
+
+- `point <word> three`
+
+Note that the list is 1-indexed. If you omit the index, it is assumed to be one. Other clicking commands also work in a similar way to the above.
+
+### Mapping points via flex grid coordinates
+
+TODO
 
 ## Boxes
 
-todo
+For inaccessible programs such as some games where there are visually distinguishable boxes which you would like a quick way to click, there is the boxes feature of flex mouse grid. It attempts to identify boxes with computer vision/image processing, and labels the boxes that it found, allowing you to interact with them.
+
+### Finding boxes
+
+- `boxes` finds boxes using the current window's box detection configuration, labeling each with a number
+
+### Moving to/click boxes
+
+- `box <number>` moves the cursor to the specified box, hiding the boxes afterwards
+- `box click <number>` clicks the specified box, hiding the boxes afterwards
+- `box righty <number>` right clicks the specified box, hiding the boxes afterwards
+
+### Hiding boxes
+
+- `boxes close` hides all boxes
+- `grid close` hides all boxes, all points, and the dense grid
+
+### Finding more boxes
+
+There are some box detection parameter defaults built in that attempt to find boxes, but depending on the colors of a given window, they are not guaranteed to work. In order to find more boxes, you can use voice commands to change these parameters and see the resulting set of boxes that are found.
+
+There are three relevant parameters that are currently changeable:
+
+- `upper` box size upper bound
+- `lower` box size lower bound
+- `threshold` the filtering threshold. The higher the number, the darker that colors can be distinguished.
+
+You can modify these parameters on an application specific basis with the following commands:
+
+- `boxes <parameter> more`
+- `boxes <parameter> less`
+
+So e.g. `boxes upper more` would increase the maximum size that a box can be. After changing any parameter, boxes will be found again so you can gauge if it was a good change or not in real time.
 
 ## Dense Mouse Grid details
 
