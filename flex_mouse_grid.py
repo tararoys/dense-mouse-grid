@@ -142,6 +142,7 @@ class FlexMouseGrid:
         self.selected_superblock = 0
         self.input_so_far = ""
         self.letters = string.ascii_lowercase
+        self.morph = []
 
         # configured via settings
         self.field_size = int(setting_field_size.get())
@@ -154,6 +155,7 @@ class FlexMouseGrid:
         self.rulers_showing = False
         self.points_showing = False
         self.boxes_showing = False
+        self.boxes_threshold_view_showing = False
 
         # points
         self.points_map_store = FlexStore("points", lambda: {})
@@ -290,12 +292,13 @@ class FlexMouseGrid:
         self.redraw()
 
     def deactivate(self):
-        if not self.active:
-            return
+        self.points_showing = False
+        self.boxes_showing = False
+        self.boxes_threshold_view_showing = False
+        self.grid_showing = False
+        self.redraw()
 
-        self.hide_grid()
         self.input_so_far = ""
-
         self.active = False
 
     def redraw(self):
@@ -754,6 +757,12 @@ class FlexMouseGrid:
 
                 canvas.paint.style = Paint.Style.FILL
 
+        def draw_threshold():
+            if len(self.morph):
+                image = Image.from_array(self.morph)
+                src = Rect(0, 0, image.width, image.height)
+                canvas.draw_image_rect(image, src, src)
+
         if self.grid_showing:
             draw_superblock()
             draw_text()
@@ -764,6 +773,9 @@ class FlexMouseGrid:
 
         if self.points_showing:
             draw_point_labels()
+
+        if self.boxes_threshold_view_showing:
+            draw_threshold()
 
         if self.boxes_showing:
             draw_boxes()
@@ -948,6 +960,9 @@ class FlexMouseGrid:
         morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
         # view_image(morph, "morph")
 
+        # temp
+        self.morph = morph
+
         # now search all of the contours for small square-ish things
         contours, _ = cv2.findContours(morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -1036,7 +1051,6 @@ class FlexMouseGrid:
             self.points_showing = onoff
         else:
             self.points_showing = not self.points_showing
-
         self.redraw()
 
     def toggle_boxes(self, onoff=None):
@@ -1044,7 +1058,10 @@ class FlexMouseGrid:
             self.boxes_showing = onoff
         else:
             self.boxes_showing = not self.boxes_showing
+        self.redraw()
 
+    def toggle_boxes_threshold_view(self):
+        self.boxes_threshold_view_showing = not self.boxes_threshold_view_showing
         self.redraw()
 
 
@@ -1176,6 +1193,10 @@ class GridActions:
     def flex_grid_boxes_toggle(onoff: int):
         """Show or hide boxes"""
         mg.toggle_boxes(onoff=onoff == 1)
+
+    def flex_grid_boxes_threshold_view_toggle():
+        """Show or hide boxes"""
+        mg.toggle_boxes_threshold_view()
 
     def flex_grid_find_boxes():
         """Find all boxes, label with hence"""

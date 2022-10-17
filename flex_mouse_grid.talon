@@ -4,10 +4,7 @@
 flex grid: user.flex_grid_place_window()
 flex grid screen: user.flex_grid_activate()
 flex grid screen <number>: user.flex_grid_select_screen(number)
-[flex] grid close:
-    user.flex_grid_deactivate()
-    user.flex_grid_points_toggle(0)
-    user.flex_grid_boxes_toggle(0)
+[flex] grid close: user.flex_grid_deactivate()
 
 # Points
 points: user.flex_grid_points_toggle(1)
@@ -47,3 +44,6 @@ boxes threshold more: user.flex_grid_box_config_change("threshold", 10)
 boxes threshold more bump: user.flex_grid_box_config_change("threshold", 1)
 boxes threshold less: user.flex_grid_box_config_change("threshold", -10)
 boxes threshold less bump: user.flex_grid_box_config_change("threshold", -1)
+
+# Box detection helpers
+boxes threshold: user.flex_grid_boxes_threshold_view_toggle()

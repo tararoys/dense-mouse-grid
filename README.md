@@ -114,12 +114,12 @@ It may be a little hard to tell what's going on, but each box got put into a poi
 
 ### Finding more boxes
 
-There are some box detection parameter defaults built in that attempt to find boxes, but depending on the colors of a given window, they are not guaranteed to work. In order to find more boxes, you can use voice commands to change these parameters and see the resulting set of boxes that are found.
+Box detection works by doing image processing with certain parameters. Some default parameters have been set, but depending on the color scheme of the window, they may not work. However, they can be configured via voice so that more boxes can be found.
 
-There are three relevant parameters that are currently changeable:
+There are three parameters that are currently changeable:
 
-- `upper` box size upper bound
-- `lower` box size lower bound
+- `upper` box size upper bound. Boxes will not be larger than this number of pixels.
+- `lower` box size lower bound. Boxes will not be smaller than this number of pixels.
 - `threshold` the filtering threshold. The higher the number, the lighter that colors can be distinguished.
 
 You can modify these parameters on an application specific basis with the following commands:
@@ -131,6 +131,14 @@ So e.g. `boxes upper more` would increase the maximum size that a box can be. Af
 
 - `boxes <parameter> more bump`
 - `boxes <parameter> less bump`
+
+### More about `threshold`
+
+Hopefully the `upper` and `lower` parameters make intuitive sense, but `threshold` is probably a little more mysterious. The best way to understand it is to see what it is doing. You can use the command:
+
+- `boxes threshold`
+
+to toggle an overlay of the processed image. This image will be black and white, and based on the `threshold` parameter setting, different parts of the image will be filtered out. Once you have turned on the overlay, you can begin adjusting the threshold with e.g. `boxes threshold more` and see the resulting change. This can be a useful way to hone in on the best threshold.
 
 ## Dense Mouse Grid details
 
@@ -206,10 +214,11 @@ The transparency uses 2-digit hexadecimal numbers for an alpha channel.
 
 ## To do
 
+- Display threshold, sizing box config parameters in UI, include box size examples
 - Remove numpy dependency
 - Implement "next point", "last point" for point lists
 - Configurable characters: alphabet, alphabet subset, numeric
-- Display threshold, sizing box config parameters in UI
 - Deduplicate grid config state
 - Allow clearing saved grid config, box config
 - Include more things in grid config
+- Automatic threshold detection?
