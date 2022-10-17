@@ -201,3 +201,12 @@ Every color in the grid is modifiable in flex_mouse_settings.talon, allowing you
 
 The colors use 6 digit hexadecimal RGB colors.
 The transparency uses 2-digit hexadecimal numbers for an alpha channel.
+
+## To do
+
+- Remove numpy dependency
+- Implement "next point", "last point" for point lists
+- Configurable characters: alphabet, alphabet subset, numeric
+- Display threshold, sizing box config parameters in UI
+- Deduplicate grid config state
+- Allow clearing saved grid config, box config
