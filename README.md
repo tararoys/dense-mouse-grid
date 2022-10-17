@@ -35,7 +35,7 @@ Flex mouse grid allows saving "points" which are just labeled points on the scre
 
 - `map <word>` creates a new point at the current location of the mouse cursor with the label "word"
 - `unmap <word>` deletes the point labeled "word"
-- `unmap everything` deletes all points for the active window
+- `unmap everything` deletes all points for the active window. Careful with this one!
 
 ### Showing/hiding point labels
 
@@ -92,7 +92,9 @@ Make sure to learn about [Points](#points) first.
 
 - `map <word> box <number>` creates a new point at the center of the chosen box labeled "word"
 - `map <word> box <number1> mark <number2>...` creates a point list of two points. You can include more points by including more `mark <number>`s.
-- `map <word> box <number1> past <number2>` creates a point list that will include a list for every box in the range between "box number1" and "box number2". Can also be done in reverse.
+- `map <word> box <number1> past <number2>` creates a point list that will include a point for every box in the range between "box number1" and "box number2". Can also be done in reverse.
+
+### Example
 
 So if we said `boxes` and saw:
 
@@ -108,7 +110,7 @@ Further, maybe we just want to refer to all of these boxes as actions. We could 
 
 ![image](images/acts.png)
 
-It may be a little hard to tell what's going on, but each box got put in a point list with label "act". We could then move our cursor to the same "sprint" button with the following: `point act nine`.
+It may be a little hard to tell what's going on, but each box got put into a point list with the label "act". We could then move our cursor to the same "sprint" button with the following: `point act nine`.
 
 ### Finding more boxes
 
@@ -210,3 +212,4 @@ The transparency uses 2-digit hexadecimal numbers for an alpha channel.
 - Display threshold, sizing box config parameters in UI
 - Deduplicate grid config state
 - Allow clearing saved grid config, box config
+- Include more things in grid config
