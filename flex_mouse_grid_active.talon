@@ -80,4 +80,5 @@ background darker bump: user.flex_grid_adjust_bg_transparency(4)
 background lighter: user.flex_grid_adjust_bg_transparency(-20)
 background lighter bump: user.flex_grid_adjust_bg_transparency(-4)
 
+# Show rulers around outside of grid
 rulers switch: user.flex_grid_rulers_toggle()

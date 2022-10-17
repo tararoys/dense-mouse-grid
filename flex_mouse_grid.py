@@ -14,10 +14,10 @@ import subprocess
 
 
 class FlexStore:
-    def __init__(self, id: str, default):
+    def __init__(self, id: str, default_getter):
         self.id = f"flex-mouse-grid.{id}"
-        self.default = default
-        self.flex_storage = storage.get(self.id, default)
+        self.default_getter = default_getter
+        self.flex_storage = storage.get(self.id, default_getter())
 
     def save(self, app_data) -> None:
         self.flex_storage[actions.app.name()] = app_data.copy()
@@ -27,7 +27,7 @@ class FlexStore:
         if actions.app.name() in self.flex_storage:
             return self.flex_storage[actions.app.name()]
 
-        return self.default
+        return self.default_getter()
 
 
 def hx(v: int) -> str:
@@ -140,17 +140,14 @@ class FlexMouseGrid:
         self.rows = 0
         self.superblocks = []
         self.selected_superblock = 0
-        self.checkers = False
         self.input_so_far = ""
+        self.letters = string.ascii_lowercase
 
         # configured via settings
-        self.field_size = 20
-        self.label_transparency = 0x99
-        self.bg_transparency = 0x22
-        self.pattern = ""
-        self.letters = string.ascii_lowercase
-        self.saved_label_transparency = 0x99
-        self.saved_bg_transparency = 0x99
+        self.field_size = int(setting_field_size.get())
+        self.label_transparency = int(setting_label_transparency.get(), 16)
+        self.bg_transparency = int(setting_superblock_transparency.get(), 16)
+        self.pattern = setting_startup_mode.get()
 
         # visibility flags
         self.grid_showing = False
@@ -159,13 +156,13 @@ class FlexMouseGrid:
         self.boxes_showing = False
 
         # points
-        self.points_map_store = FlexStore("points", {})
+        self.points_map_store = FlexStore("points", lambda: {})
         self.points_map = self.points_map_store.load()
 
         # boxes
         self.box_config_store = FlexStore(
             "box_config",
-            {
+            lambda: {
                 "threshold": 25,
                 "box_size_lower": 31,
                 "box_size_upper": 400,
@@ -173,6 +170,18 @@ class FlexMouseGrid:
         )
         self.box_config = self.box_config_store.load()
         self.boxes = []
+
+        # flex grid
+        self.grid_config_store = FlexStore(
+            "grid_config",
+            lambda: {
+                "field_size": int(setting_field_size.get()),
+                "label_transparency": int(setting_label_transparency.get(), 16),
+                "bg_transparency": int(setting_superblock_transparency.get(), 16),
+                "pattern": setting_startup_mode.get(),
+            },
+        )
+        self.load_grid_config_from_store()
 
     def add_partial_input(self, letter: str):
         # this logic changes which superblock is selected
@@ -203,22 +212,8 @@ class FlexMouseGrid:
             self.label_transparency = 0
         if self.label_transparency > 255:
             self.label_transparency = 255
-        self.redraw()
 
-    def set_bg_transparency(self, amount: int):
-        self.bg_transparency = amount
-        if self.bg_transparency < 0:
-            self.label_transparency = 0
-        if self.bg_transparency > 255:
-            self.label_transparency = 255
-        self.redraw()
-
-    def set_label_transparency(self, amount: int):
-        self.label_transparency = amount
-        if self.label_transparency < 0:
-            self.label_transparency = 0
-        if self.label_transparency > 255:
-            self.label_transparency = 255
+        self.save_grid_config_to_store()
         self.redraw()
 
     def adjust_field_size(self, amount: int):
@@ -230,6 +225,7 @@ class FlexMouseGrid:
         self.rows = int(self.rect.height // self.field_size)
         self.superblocks = []
 
+        self.save_grid_config_to_store()
         self.show_grid()
         self.redraw()
 
@@ -257,13 +253,11 @@ class FlexMouseGrid:
         self.rect = rect.copy()
         self.screen = screen
 
-        self.field_size = int(setting_field_size.get())
+        self.load_grid_config_from_store()
 
         # use the field size to calculate how many rows and how many columns there are
         self.columns = int(self.rect.width // self.field_size)
         self.rows = int(self.rect.height // self.field_size)
-        self.label_transparency = int(setting_label_transparency.get(), 16)
-        self.bg_transparency = int(setting_superblock_transparency.get(), 16)
 
         self.history = []
 
@@ -275,9 +269,6 @@ class FlexMouseGrid:
 
         self.rulers_showing = False
         self.points_showing = False
-
-        self.checkers = False
-        self.pattern = setting_startup_mode.get()
 
         self.input_so_far = ""
 
@@ -294,9 +285,6 @@ class FlexMouseGrid:
     def hide_grid(self):
         if not self.grid_showing:
             return
-
-        self.saved_label_transparency = self.label_transparency
-        self.saved_bg_transparency = self.bg_transparency
 
         self.grid_showing = False
         self.redraw()
@@ -315,8 +303,6 @@ class FlexMouseGrid:
             self.mcanvas.freeze()
 
     def draw(self, canvas):
-        # self.field_size = int(setting_field_size.get())
-
         # for other-screen or individual-window grids
         canvas.translate(self.rect.x, self.rect.y)
         canvas.clip_rect(
@@ -782,6 +768,23 @@ class FlexMouseGrid:
         if self.boxes_showing:
             draw_boxes()
 
+    def load_grid_config_from_store(self):
+        self.grid_config = self.grid_config_store.load()
+        self.field_size = self.grid_config["field_size"]
+        self.label_transparency = self.grid_config["label_transparency"]
+        self.bg_transparency = self.grid_config["bg_transparency"]
+        self.pattern = self.grid_config["pattern"]
+
+    def save_grid_config_to_store(self):
+        self.grid_config_store.save(
+            {
+                "field_size": self.field_size,
+                "label_transparency": self.label_transparency,
+                "bg_transparency": self.bg_transparency,
+                "pattern": self.pattern,
+            }
+        )
+
     def save_points(self):
         self.points_map_store.save(self.points_map)
 
@@ -792,6 +795,7 @@ class FlexMouseGrid:
         # reload the stores for the current active window
         self.points_map = self.points_map_store.load()
         self.box_config = self.box_config_store.load()
+        self.load_grid_config_from_store()
 
         # reset our rectangle to capture the active window
         self.rect = ui.active_window().rect.copy()
@@ -1016,20 +1020,9 @@ class FlexMouseGrid:
         self.input_so_far = ""
         self.redraw()
 
-    def turn_on_checkers(self):
-        self.pattern = "checkers"
-        self.redraw()
-
-    def turn_on_frame(self):
-        self.pattern = "frame"
-        self.redraw()
-
-    def turn_on_full(self):
-        self.pattern = "none"
-        self.redraw()
-
-    def turn_on_phonetic(self):
-        self.pattern = "phonetic"
+    def set_pattern(self, pattern: str):
+        self.pattern = pattern
+        self.save_grid_config_to_store()
         self.redraw()
 
     def toggle_rulers(self):
@@ -1062,7 +1055,7 @@ mg.setup()
 @mod.action_class
 class GridActions:
     def flex_grid_activate():
-        """Show mouse grid"""
+        """Place mouse grid over first screen"""
         mg.deactivate()
         mg.setup(rect=ui.screens()[0].rect)
         mg.show_grid()
@@ -1070,7 +1063,7 @@ class GridActions:
         ctx.tags = ["user.flex_mouse_grid_showing"]
 
     def flex_grid_place_window():
-        """Places the grid on the currently active window"""
+        """Place mouse grid over the currently active window"""
         mg.deactivate()
         mg.setup(rect=ui.active_window().rect)
         mg.show_grid()
@@ -1078,7 +1071,7 @@ class GridActions:
         ctx.tags = ["user.flex_mouse_grid_showing"]
 
     def flex_grid_select_screen(screen: int):
-        """Brings up mouse grid"""
+        """Place mouse grid over specified screen"""
         mg.deactivate()
 
         screen_index = screen - 1
@@ -1105,25 +1098,35 @@ class GridActions:
         """Show the grid"""
         mg.show_grid()
 
-    def flex_grid_checkers():
-        """Show or hide every other label box so more of the underlying screen content is visible"""
-        mg.turn_on_checkers()
-
-    def flex_grid_frame():
-        """Show or hide rulers all around the window"""
-        mg.turn_on_frame()
-
-    def flex_grid_full():
-        """Toggle full mouse grid on"""
-        mg.turn_on_full()
-
-    def flex_grid_phonetic():
-        """Toggle phonetic mouse grid on"""
-        mg.turn_on_phonetic()
-
     def flex_grid_rulers_toggle():
         """Show or hide rulers all around the window"""
         mg.toggle_rulers()
+
+    def flex_grid_input_partial(letter: str):
+        """Input one letter to highlight a row or column"""
+        mg.add_partial_input(str(letter))
+
+    def flex_grid_input_horizontal(letter: str):
+        """This command is for if you chose the wrong row and you want to choose a different row before choosing a column"""
+        mg.input_so_far = ""
+        mg.add_partial_input(str(letter))
+
+    # GRID CONFIG
+    def flex_grid_checkers():
+        """Set pattern to checkers"""
+        mg.set_pattern("checkers")
+
+    def flex_grid_frame():
+        """Set pattern to frame"""
+        mg.set_pattern("frame")
+
+    def flex_grid_full():
+        """Set pattern to full"""
+        mg.set_pattern("full")
+
+    def flex_grid_phonetic():
+        """Set pattern to phonetic"""
+        mg.set_pattern("phonetic")
 
     def flex_grid_adjust_bg_transparency(amount: int):
         """Increase or decrease the opacity of the background of the flex mouse grid (also returns new value)"""
@@ -1136,15 +1139,6 @@ class GridActions:
     def flex_grid_adjust_size(amount: int):
         """Increase or decrease size of everything"""
         mg.adjust_field_size(amount)
-
-    def flex_grid_input_partial(letter: str):
-        """Input one letter to highlight a row or column"""
-        mg.add_partial_input(str(letter))
-
-    def flex_grid_input_horizontal(letter: str):
-        """This command is for if you chose the wrong row and you want to choose a different row before choosing a column"""
-        mg.input_so_far = ""
-        mg.add_partial_input(str(letter))
 
     # POINTS
     def flex_grid_points_toggle(onoff: int):

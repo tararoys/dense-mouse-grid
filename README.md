@@ -25,6 +25,8 @@ You can think of Flex Mouse Grid as extending the functionality of Dense Mouse G
 
 If you are just interested in the dense mouse grid features, you may consider just using the simpler [Dense Mouse Grid](https://github.com/tararoys/dense-mouse-grid). Otherwise, you can read the following sections on [Points](#points), [Boxes](#boxes), and finally [Dense Mouse Grid](#dense-mouse-grid-details) to learn about the core features of this tool.
 
+Note that some of the voice commands for the Dense Mouse Grid have been renamed. Mostly swapping the order of certain commands like going from `smaller grid` to `grid smaller`. Feel free to change these back of course!
+
 ## Points
 
 Flex mouse grid allows saving "points" which are just labeled points on the screen. They are always saved relative to the active window, so you can safely move a window around, and know that points will be unaffected.
