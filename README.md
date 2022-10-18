@@ -12,14 +12,6 @@ You can think of Flex Mouse Grid as extending the functionality of Dense Mouse G
 1. Install the [Talon voice framework](https://talonvoice.com/docs/index.html#getting-started).
 1. Clone the [knausj-talon](https://github.com/knausj85/knausj_talon) repository into your Talon user directory. This tool is designed to be used along with the knausj-talon repository, but is compatible with any repository that provides the letters a-z using the `<user.letters>` capture and numbers using the `<numbers>` capture.
 1. Clone this repository into your Talon user directory.
-1. Install the python dependencies. Assuming the default install location on a Mac, run these commands:
-
-```
-~/.talon/bin/pip install opencv-python-headless
-~/.talon/bin/pip install numpy
-```
-
-5. Restart Talon.
 
 ## Learning to use the tool
 
