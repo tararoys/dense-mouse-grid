@@ -47,3 +47,6 @@ boxes threshold less bump: user.flex_grid_box_config_change("threshold", -1)
 
 # Box detection helpers
 boxes threshold: user.flex_grid_boxes_threshold_view_toggle()
+
+# Flex grid informational UI
+flex info: user.flex_grid_info_toggle()

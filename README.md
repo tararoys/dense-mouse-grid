@@ -106,9 +106,13 @@ It may be a little hard to tell what's going on, but each box got put into a poi
 
 ### Finding more boxes
 
-Box detection works by doing image processing with certain parameters. Some default parameters have been set, but depending on the color scheme of the window, they may not work. However, they can be configured via voice so that more boxes can be found.
+Box detection works by doing image processing with the following three parameters. Some default values have been set, but depending on the color scheme of the window, they may not work. However, they can be configured via voice so that more boxes can be found.
 
-There are three parameters that are currently changeable:
+To see what parameters are already set:
+
+- `flex info` toggles a view of the current grid and box configuration parameters
+
+There are three box configuration parameters that are currently changeable:
 
 - `upper` box size upper bound. Boxes will not be larger than this number of pixels.
 - `lower` box size lower bound. Boxes will not be smaller than this number of pixels.
@@ -206,8 +210,6 @@ The transparency uses 2-digit hexadecimal numbers for an alpha channel.
 
 ## To do
 
-- Display threshold, sizing box config parameters in UI, include box size examples
-- Remove numpy dependency
 - Implement "next point", "last point" for point lists
 - Configurable characters: alphabet, alphabet subset, numeric
 - Deduplicate grid config state

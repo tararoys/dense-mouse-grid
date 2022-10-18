@@ -1,6 +1,8 @@
 # Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily
 # edited by Tara. Finally, again heavily modified by brollin. Stole a lot of ideas from screen-spots
 # by Andrew.
+from .ui_widgets import layout_text
+from .ui_widgets import render_text
 from talon import actions, canvas, Context, ctrl, Module, registry, ui, storage, screen
 from talon.skia import Paint, Rect, Image
 from talon.types.point import Point2d
@@ -156,6 +158,7 @@ class FlexMouseGrid:
         self.points_showing = False
         self.boxes_showing = False
         self.boxes_threshold_view_showing = False
+        self.info_showing = False
 
         # points
         self.points_map_store = FlexStore("points", lambda: {})
@@ -296,6 +299,7 @@ class FlexMouseGrid:
         self.boxes_showing = False
         self.boxes_threshold_view_showing = False
         self.grid_showing = False
+        self.info_showing = False
         self.redraw()
 
         self.input_so_far = ""
@@ -316,25 +320,6 @@ class FlexMouseGrid:
                 self.rect.height + self.field_size * 4,
             )
         )
-
-        crosswidth = 6
-
-        def draw_crosses():
-            for row in range(1, self.rows):
-                for col in range(1, self.columns):
-                    cx = self.field_size * col
-                    cy = self.field_size * row
-
-                    canvas.save()
-                    canvas.translate(0.5, 0.5)
-
-                    canvas.draw_line(
-                        cx - crosswidth + 0.5, cy, cx + crosswidth - 0.5, cy
-                    )
-                    canvas.draw_line(cx, cy + 0.5, cx, cy + crosswidth - 0.5)
-                    canvas.draw_line(cx, cy - crosswidth + 0.5, cx, cy - 0.5)
-
-                    canvas.restore()
 
         def draw_superblock():
 
@@ -431,7 +416,6 @@ class FlexMouseGrid:
             canvas.paint.text_align = canvas.paint.TextAlign.CENTER
             canvas.paint.textsize = 17
             canvas.paint.typeface = setting_flex_grid_font.get()
-            # canvas.paint.typeface = "arial rounded mt"
 
             skip_it = False
 
@@ -763,10 +747,80 @@ class FlexMouseGrid:
                 src = Rect(0, 0, image.width, image.height)
                 canvas.draw_image_rect(image, src, src)
 
+        def draw_info():
+            # retrieve the app-specific box detection configuration
+            threshold = self.box_config["threshold"]
+            box_size_lower = self.box_config["box_size_lower"]
+            box_size_upper = self.box_config["box_size_upper"]
+
+            info_text = (
+                "GRID CONFIG====================\n"
+                + f"  pattern:                {self.pattern}\n"
+                + f"  field size:             {self.field_size}\n"
+                + f"  label transparency:     {self.label_transparency}\n"
+                + f"  bg transparency:        {self.bg_transparency}\n"
+                + "\n"
+                + "BOX CONFIG=====================\n"
+                + f"  box size lower bound:   {box_size_lower}\n"
+                + f"  box size upper bound:   {box_size_upper}\n"
+                + f"  threshold:              {threshold}\n"
+            )
+
+            canvas.paint.text_align = canvas.paint.TextAlign.LEFT
+            canvas.paint.textsize = int(self.field_size * 3 / 5)
+            canvas.paint.typeface = "courier"
+            canvas.paint.color = "55a3fb"
+            (w, h), formatted_text = layout_text(info_text, canvas.paint, 800)
+            x, y = self.rect.width // 2, self.rect.height // 2
+
+            canvas.paint.color = "000000"
+            canvas.paint.style = Paint.Style.FILL
+            background_rect = Rect(x, y + 5, w, h)
+            background_rect = background_rect.inset(-4)
+            canvas.draw_rect(background_rect)
+            canvas.paint.color = "ffffff"
+            canvas.paint.style = Paint.Style.STROKE
+            canvas.paint.stroke_width = 1
+            canvas.draw_rect(background_rect)
+            render_text(canvas, formatted_text, x, y)
+
+            spacing = 15
+            lower_rect = Rect(
+                background_rect.x,
+                background_rect.y + h + spacing,
+                box_size_lower,
+                box_size_lower,
+            )
+            upper_rect = Rect(
+                background_rect.x + lower_rect.width + spacing,
+                background_rect.y + h + spacing,
+                box_size_upper,
+                box_size_upper,
+            )
+
+            canvas.draw_rect(lower_rect)
+            canvas.draw_rect(upper_rect)
+            canvas.paint.color = "000000ff"
+            canvas.paint.style = Paint.Style.FILL
+            canvas.draw_rect(lower_rect)
+            canvas.draw_rect(upper_rect)
+            canvas.paint.text_align = canvas.paint.TextAlign.CENTER
+            text_rect = canvas.paint.measure_text("1")[1]
+            canvas.paint.color = "55a3fb"
+            canvas.draw_text(
+                str(box_size_lower),
+                lower_rect.center.x,
+                lower_rect.center.y + text_rect.height // 4,
+            )
+            canvas.draw_text(
+                str(box_size_upper),
+                upper_rect.center.x,
+                upper_rect.center.y + text_rect.height // 4,
+            )
+
         if self.grid_showing:
             draw_superblock()
             draw_text()
-            # draw_crosses()
 
             if self.rulers_showing:
                 draw_rulers()
@@ -779,6 +833,9 @@ class FlexMouseGrid:
 
         if self.boxes_showing:
             draw_boxes()
+
+        if self.info_showing:
+            draw_info()
 
     def load_grid_config_from_store(self):
         self.grid_config = self.grid_config_store.load()
@@ -1064,6 +1121,12 @@ class FlexMouseGrid:
         self.boxes_threshold_view_showing = not self.boxes_threshold_view_showing
         self.redraw()
 
+    def toggle_info(self):
+        self.reset_window_context()
+
+        self.info_showing = not self.info_showing
+        self.redraw()
+
 
 mg = FlexMouseGrid()
 mg.setup()
@@ -1081,7 +1144,7 @@ class GridActions:
 
     def flex_grid_place_window():
         """Place mouse grid over the currently active window"""
-        mg.deactivate()
+        # mg.deactivate()
         mg.setup(rect=ui.active_window().rect)
         mg.show_grid()
 
@@ -1212,3 +1275,7 @@ class GridActions:
         mg.box_config[parameter] += delta
         mg.save_box_config()
         mg.find_boxes()
+
+    def flex_grid_info_toggle():
+        """Show or hide informational UI"""
+        mg.toggle_info()
