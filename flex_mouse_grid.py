@@ -1,9 +1,19 @@
 # Written by timo, based on mousegrid written by timo and cleaned up a lot by aegis, heavily heavily
 # edited by Tara. Finally, again heavily modified by brollin. Stole a lot of ideas from screen-spots
 # by Andrew.
+from .flex_store import FlexStore
 from .ui_widgets import layout_text
 from .ui_widgets import render_text
-from talon import actions, canvas, Context, ctrl, Module, registry, ui, storage, screen
+from talon import (
+    app,
+    canvas,
+    Context,
+    ctrl,
+    Module,
+    registry,
+    ui,
+    screen,
+)
 from talon.skia import Paint, Rect, Image
 from talon.types.point import Point2d
 
@@ -13,23 +23,6 @@ import time
 import cv2
 import numpy as np
 import subprocess
-
-
-class FlexStore:
-    def __init__(self, id: str, default_getter):
-        self.id = f"flex-mouse-grid.{id}"
-        self.default_getter = default_getter
-        self.flex_storage = storage.get(self.id, default_getter())
-
-    def save(self, app_data) -> None:
-        self.flex_storage[actions.app.name()] = app_data.copy()
-        storage.set(self.id, self.flex_storage)
-
-    def load(self):
-        if actions.app.name() in self.flex_storage:
-            return self.flex_storage[actions.app.name()]
-
-        return self.default_getter()
 
 
 def hx(v: int) -> str:
@@ -42,7 +35,6 @@ mod.tag(
     "flex_mouse_grid_showing",
     desc="Tag indicates whether the flex mouse grid is showing",
 )
-# mod.tag("flex_mouse_grid_enabled", desc="Tag enables the flex mouse grid commands.")
 
 setting_letters_background_color = mod.setting(
     "flex_mouse_grid_letters_background_color",
@@ -137,7 +129,6 @@ class FlexMouseGrid:
         self.rect = None
         self.history = []
         self.mcanvas = None
-        self.active = False
         self.columns = 0
         self.rows = 0
         self.superblocks = []
@@ -159,6 +150,45 @@ class FlexMouseGrid:
         self.boxes_showing = False
         self.boxes_threshold_view_showing = False
         self.info_showing = False
+
+    def setup(self, *, rect: Rect = None, screen_index: int = None):
+        # get informaition on number and size of screens
+        screens = ui.screens()
+
+        # each if block here might set the rect to None to indicate failure
+        # rect contains position, height, and width of the canvas
+        if rect is not None:
+            try:
+                screen = ui.screen_containing(*rect.center)
+            except Exception:
+                rect = None
+
+        if rect is None and screen_index is not None:
+            screen = screens[screen_index % len(screens)]
+            rect = screen.rect
+
+        # default the rect to the first screen
+        if rect is None:
+            screen = screens[0]
+            rect = screen.rect
+
+        self.rect = rect.copy()
+        self.screen = screen
+
+        # use the field size to calculate how many rows and how many columns there are
+        self.columns = int(self.rect.width // self.field_size)
+        self.rows = int(self.rect.height // self.field_size)
+
+        self.history = []
+        self.superblocks = []
+        self.selected_superblock = 0
+        self.input_so_far = ""
+
+        # visibility flags
+        self.grid_showing = False
+        self.rulers_showing = False
+        self.points_showing = False
+        self.boxes_showing = False
 
         # points
         self.points_map_store = FlexStore("points", lambda: {})
@@ -187,6 +217,12 @@ class FlexMouseGrid:
             },
         )
         self.load_grid_config_from_store()
+
+        if self.mcanvas is not None:
+            self.mcanvas.close()
+        self.mcanvas = canvas.Canvas.from_screen(screen)
+        self.mcanvas.register("draw", self.draw)
+        self.mcanvas.freeze()
 
     def add_partial_input(self, letter: str):
         # this logic changes which superblock is selected
@@ -234,55 +270,6 @@ class FlexMouseGrid:
         self.show_grid()
         self.redraw()
 
-    def setup(self, *, rect: Rect = None, screen_index: int = None):
-        # get informaition on number and size of screens
-        screens = ui.screens()
-
-        # each if block here might set the rect to None to indicate failure
-        # rect contains position, height, and width of the canvas
-        if rect is not None:
-            try:
-                screen = ui.screen_containing(*rect.center)
-            except Exception:
-                rect = None
-
-        if rect is None and screen_index is not None:
-            screen = screens[screen_index % len(screens)]
-            rect = screen.rect
-
-        # default the rect to the first screen
-        if rect is None:
-            screen = screens[0]
-            rect = screen.rect
-
-        self.rect = rect.copy()
-        self.screen = screen
-
-        self.load_grid_config_from_store()
-
-        # use the field size to calculate how many rows and how many columns there are
-        self.columns = int(self.rect.width // self.field_size)
-        self.rows = int(self.rect.height // self.field_size)
-
-        self.history = []
-
-        self.active = True
-        self.grid_showing = False
-
-        self.superblocks = []
-        self.selected_superblock = 0
-
-        self.rulers_showing = False
-        self.points_showing = False
-
-        self.input_so_far = ""
-
-        if self.mcanvas is not None:
-            self.mcanvas.close()
-        self.mcanvas = canvas.Canvas.from_screen(screen)
-        self.mcanvas.register("draw", self.draw)
-        self.mcanvas.freeze()
-
     def show_grid(self):
         self.grid_showing = True
         self.redraw()
@@ -303,7 +290,6 @@ class FlexMouseGrid:
         self.redraw()
 
         self.input_so_far = ""
-        self.active = False
 
     def redraw(self):
         if self.mcanvas:
@@ -1129,7 +1115,7 @@ class FlexMouseGrid:
 
 
 mg = FlexMouseGrid()
-mg.setup()
+app.register("ready", mg.setup)
 
 
 @mod.action_class
