@@ -981,17 +981,95 @@ class FlexMouseGrid:
         self.boxes_showing = b
         self.grid_showing = g
 
+    def setup_boxes(self):
+        self.reset_window_context()
+
+        # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
+        self.temporarily_hide_everything()
+
+        results = {}
+
+        def find_maximum(function, lower, upper, iterations_left):
+            middle = int((upper + lower) / 2)
+            result = function(middle)
+            results[middle] = result
+
+            # short circuit when out of iterations or results are all the same
+            if iterations_left == 0 or (results[lower] == result == results[upper]):
+                return middle
+
+            # handle triangle case, e.g. 4, 10, 6
+            if results[lower] < result > results[upper]:
+                if results[lower] > results[upper]:
+                    return find_maximum(function, lower, middle, iterations_left - 1)
+                else:
+                    return find_maximum(function, middle, upper, iterations_left - 1)
+
+            if result > results[lower]:
+                return find_maximum(function, middle, upper, iterations_left - 1)
+            else:
+                return find_maximum(function, lower, middle, iterations_left - 1)
+
+        # use box lower and upper bounds from settings
+        box_size_lower = self.box_config["box_size_lower"]
+        box_size_upper = self.box_config["box_size_upper"]
+
+        def find_boxes_with_threshold(threshold):
+            self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
+            return len(self.boxes)
+
+        # first do a broad scan, checking number of boxes found across a range of thresholds
+        results = {
+            threshold: find_boxes_with_threshold(threshold)
+            for threshold in range(5, 256, 25)
+        }
+
+        lower = 5
+        upper = 5
+        upper_result = results[5]
+        # iterate up threshold values. when a new max is found, store threshold as upper. old upper
+        # becomes lower.
+        for threshold, result in results.items():
+            if result >= upper_result:
+                upper_result = result
+                lower = upper
+                upper = threshold
+
+        # print("lower", lower)
+        # print("upper", upper)
+        final_result = find_maximum(find_boxes_with_threshold, lower, upper, 4)
+        print("final_threshold", final_result)
+        # print("final_boxes", results[final_result])
+
+        # save final threshold
+        self.box_config["threshold"] = final_result
+        self.save_box_config()
+
+        # restore everything previously hidden and show boxes
+        self.restore_everything()
+        self.boxes_showing = True
+        self.redraw()
+
     def find_boxes(self):
         self.reset_window_context()
+
+        # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
+        self.temporarily_hide_everything()
 
         # retrieve the app-specific box detection configuration
         threshold = self.box_config["threshold"]
         box_size_lower = self.box_config["box_size_lower"]
         box_size_upper = self.box_config["box_size_upper"]
 
-        # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
-        self.temporarily_hide_everything()
+        # perform box detection
+        self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
 
+        # restore everything previously hidden and show boxes
+        self.restore_everything()
+        self.boxes_showing = True
+        self.redraw()
+
+    def find_boxes_with_config(self, threshold, box_size_lower, box_size_upper):
         # find boxes by first applying a threshold filter to the grayscale window
         img = np.array(screen.capture_rect(self.rect))
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -1000,14 +1078,13 @@ class FlexMouseGrid:
 
         # use a close morphology transform to filter out thin lines
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
-        morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        self.morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
         # view_image(morph, "morph")
 
-        # temp
-        self.morph = morph
-
         # now search all of the contours for small square-ish things
-        contours, _ = cv2.findContours(morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            self.morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        )
 
         all_boxes = []
         for c in contours:
@@ -1041,9 +1118,6 @@ class FlexMouseGrid:
                 self.boxes.append(box1)
 
         # print("after omissions", len(self.boxes))
-        self.restore_everything()
-        self.boxes_showing = True
-        self.redraw()
 
     def go_to_box(self, box_number):
         if box_number >= len(self.boxes):
@@ -1248,8 +1322,12 @@ class GridActions:
         mg.toggle_boxes_threshold_view()
 
     def flex_grid_find_boxes():
-        """Find all boxes, label with hence"""
+        """Find all boxes, label with hints"""
         mg.find_boxes()
+
+    def flex_grid_setup_boxes():
+        """Do a binary search to find best box configuration"""
+        mg.setup_boxes()
 
     def flex_grid_go_to_box(box_number: int, mouse_button: int):
         """Go to a box"""
