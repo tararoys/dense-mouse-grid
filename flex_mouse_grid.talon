@@ -25,8 +25,8 @@ unmap <user.word>: user.flex_grid_unmap_point(word)
 unmap everything: user.flex_grid_unmap_point("")
 
 # Boxes
-box check: user.flex_grid_setup_boxes()
-boxes: user.flex_grid_find_boxes()
+boxes: user.flex_grid_setup_boxes()
+boxes show: user.flex_grid_find_boxes()
 box <number>: user.flex_grid_go_to_box(number or 1, -1)
 box click <number>: user.flex_grid_go_to_box(number or 1, 0)
 box righty <number>: user.flex_grid_go_to_box(number or 1, 1)

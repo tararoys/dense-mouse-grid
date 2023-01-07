@@ -63,7 +63,7 @@ Lets take as an example this set of boxes from a game:
 
 ### Finding boxes
 
-- `boxes` finds boxes using the current window's box detection configuration, labeling each with a number
+- `boxes` finds boxes labeling each with a number. It attempts to find the optimal box detection configuration for the current window
 
 ![image](images/boxes.png)
 
@@ -106,17 +106,17 @@ It may be a little hard to tell what's going on, but each box got put into a poi
 
 ### Finding more boxes
 
-Box detection works by doing image processing with the following three parameters. Some default values have been set, but depending on the color scheme of the window, they may not work. However, they can be configured via voice so that more boxes can be found.
-
-To see what parameters are already set:
-
-- `flex info` toggles a view of the current grid and box configuration parameters
+Box detection works by doing image processing with three configurable parameters. By default the `boxes` command will attempt to set an optimal `threshold` parameter, but depending on the color scheme of the window, you may be able to improve it. The `threshold`, `upper bound`, and `lower bound` can be configured via voice so that more boxes can be found.
 
 There are three box configuration parameters that are currently changeable:
 
 - `upper` box size upper bound. Boxes will not be larger than this number of pixels.
 - `lower` box size lower bound. Boxes will not be smaller than this number of pixels.
 - `threshold` the filtering threshold. The higher the number, the lighter that colors can be distinguished.
+
+To see what parameters are already set:
+
+- `flex info` toggles a view of the current grid and box configuration parameters
 
 You can modify these parameters on an application specific basis with the following commands:
 
