@@ -4,7 +4,7 @@ A hands-free mouse grid by Tara Roys, timotimo, and aegis.
 
 The Dense Mouse Grid is a completely hands-free replacement for traditional mousing. It replaces mouse movements with voice commands.  You tell the computer what grid coordinate you want to move to on the screen, and the mouse grid moves your cursor to that location.
 
-To use this, put the folder dense_mouse_grid anywhere in the Talon user directory. This assumes that 1. you have Talon installed, and 2. you are using the knausj talon repository detailed in the [installation instructions here](https://talonvoice.com/docs/index.html#getting-started).  This script depends on having support from a phonetic alphabet and numbers scripts.  It is designed to be used along with the knausj-talon repository, but is compatable with any repository that provides the letters a-z using the <user.letters> capture and numbers using the <numbers> caputure.
+To use this, put the folder dense_mouse_grid anywhere in the Talon user directory. This assumes that 1. you have Talon installed, and 2. you are using the knausj talon repository detailed in the [installation instructions here](https://talonvoice.com/docs/index.html#getting-started).  This script depends on having support from a phonetic alphabet and numbers scripts.  It is designed to be used along with the knausj-talon repository, but is compatable with any repository that provides the letters a-z using the <user.letters> capture and numbers using the <numbers> capture.
         
 
 This is the "dense mouse grid". It fills the screen with fields that can be reached with a number and two letters.
@@ -29,7 +29,7 @@ By default, the grid stays up.  You can turn off the grid by saying `grid close`
 
 # Basic usage in Frame Mode
 
-The grid will appear in Phonetic Mode.  Phonetic Mode loads whatever phonetic alphabed you have and uses it to lable rows.  When you select a row, it will use your phonetic alphabet to lable the columns.  As a result you do not need to remember the phonetic alphabet to use this mouse because it will appear on screen for you.  
+The grid will appear in Phonetic Mode.  Phonetic Mode loads whatever phonetic alphabed you have and uses it to label rows.  When you select a row, it will use your phonetic alphabet to label the columns.  As a result you do not need to remember the phonetic alphabet to use this mouse because it will appear on screen for you.  
 
 	2 Cap Bat
 
