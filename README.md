@@ -176,7 +176,7 @@ will result in moving the cursor to coordinate 1 B C.
 
 If frame mode does not suit you, there are two other modes that can be used to show the coordinates.
 
-- `grid checker` turns on checker mode, which overlays the coordiantes in a checker pattern. This can be visually confusing, but it splits the difference between being able to immediately see the coordinate and being able to see the contents of your screen.
+- `grid checker` turns on checker mode, which overlays the coordinates in a checker pattern. This can be visually confusing, but it splits the difference between being able to immediately see the coordinate and being able to see the contents of your screen.
 - `grid full` shows every possible coordinate.
 - `grid phonetic` switch to phonetic mode, which is just like frame mode except with full phonetic words labeling the rows and columns instead of individual letters.
 - `grid frame` switches to frame mode (the default).
