@@ -294,7 +294,7 @@ class MouseSnapMillion:
 
         self.rulers = False
         self.checkers = False
-        self.pattern = "phonetic"
+        self.pattern = str(setting_dense_grid_startup_mode.get())
 
         self.input_so_far = ""
 
