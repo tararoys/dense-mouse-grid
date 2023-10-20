@@ -83,7 +83,7 @@ setting_label_transparency = mod.setting(
     desc="sets the transparency of the labels",
 )
 
-dense_grid_startup_mode = mod.setting(
+setting_dense_grid_startup_mode = mod.setting(
     "full_mouse_grid_startup_mode",
     type=str,
     default="phonetic",
@@ -294,7 +294,7 @@ class MouseSnapMillion:
 
         self.rulers = False
         self.checkers = False
-        self.pattern = "phonetic"
+        self.pattern = str(setting_dense_grid_startup_mode.get())
 
         self.input_so_far = ""
 
