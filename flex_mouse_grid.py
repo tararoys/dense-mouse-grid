@@ -20,9 +20,13 @@ from talon.types.point import Point2d
 import typing
 import string
 import time
-import cv2
+
 import numpy as np
+
 import subprocess
+import sys
+import os
+import json
 
 
 def hx(v: int) -> str:
@@ -126,7 +130,7 @@ def view_image(image_array, name):
 class FlexMouseGrid:
     def __init__(self):
         self.screen = None
-        self.rect = None
+        self.rect: Rect = None
         self.history = []
         self.mcanvas = None
         self.columns = 0
@@ -151,7 +155,7 @@ class FlexMouseGrid:
         self.boxes_threshold_view_showing = False
         self.info_showing = False
 
-    def setup(self, *, rect: Rect = None, screen_index: int = None):
+    def setup(self, *, rect: Rect = None, screen_index: int = -1):
         # get informaition on number and size of screens
         screens = ui.screens()
 
@@ -163,7 +167,7 @@ class FlexMouseGrid:
             except Exception:
                 rect = None
 
-        if rect is None and screen_index is not None:
+        if rect is None and screen_index >= 0:
             screen = screens[screen_index % len(screens)]
             rect = screen.rect
 
@@ -308,7 +312,6 @@ class FlexMouseGrid:
         )
 
         def draw_superblock():
-
             superblock_size = len(self.letters) * self.field_size
 
             colors = ["000055", "665566", "554444", "888855", "aa55aa", "55cccc"] * 100
@@ -343,7 +346,6 @@ class FlexMouseGrid:
                     canvas.draw_rect(blockrect)
 
                     if skipped_superblock != num:
-
                         # attempt to change backround color on the superblock chosen
 
                         # canvas.paint.color = colors[(row + col) % len(colors)] + hx(self.bg_transparency)
@@ -398,7 +400,6 @@ class FlexMouseGrid:
                     num += 1
 
         def draw_text():
-
             canvas.paint.text_align = canvas.paint.TextAlign.CENTER
             canvas.paint.textsize = 17
             canvas.paint.typeface = setting_flex_grid_font.get()
@@ -407,7 +408,6 @@ class FlexMouseGrid:
 
             for row in range(0, self.rows + 1):
                 for col in range(0, self.columns + 1):
-
                     if self.pattern == "checkers":
                         if (row % 2 == 0 and col % 2 == 0) or (
                             row % 2 == 1 and col % 2 == 1
@@ -465,7 +465,6 @@ class FlexMouseGrid:
             # remove distracting letters from frame mode frames.
             if self.pattern == "frame":
                 if self.letters[row % len(self.letters)] == "a":
-
                     # gets a letter from the alphabet of the form 'ab' or 'DA'
                     text_string = f"{self.letters[col % len(self.letters)]}"
                     # this the measure text is the box around the text.
@@ -498,7 +497,6 @@ class FlexMouseGrid:
 
             elif self.pattern == "phonetic":
                 if self.letters[row % len(self.letters)] == "a":
-
                     # gets a letter from the alphabet of the form 'ab' or 'DA'
                     text_string = f"{self.letters[col % len(self.letters)]}"
                     # this the measure text is the box around the text.
@@ -635,7 +633,7 @@ class FlexMouseGrid:
                         )
 
         def draw_rulers():
-            for (x_pos, align) in [
+            for x_pos, align in [
                 (-3, canvas.paint.TextAlign.RIGHT),
                 (self.rect.width + 3, canvas.paint.TextAlign.LEFT),
             ]:
@@ -1070,54 +1068,34 @@ class FlexMouseGrid:
         self.redraw()
 
     def find_boxes_with_config(self, threshold, box_size_lower, box_size_upper):
-        # find boxes by first applying a threshold filter to the grayscale window
+        current_directory = os.path.dirname(__file__)
+        find_boxes_path = os.path.join(current_directory, ".find_boxes.py")
+
         img = np.array(screen.capture_rect(self.rect))
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
-        # view_image(thresh, "thresh")
 
-        # use a close morphology transform to filter out thin lines
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
-        self.morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-        # view_image(morph, "morph")
-
-        # now search all of the contours for small square-ish things
-        contours, _ = cv2.findContours(
-            self.morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        # run openCV script to find boxes in a separate process
+        out = subprocess.run(
+            (sys.executable, find_boxes_path),
+            capture_output=True,
+            input=json.dumps(
+                {
+                    "threshold": threshold,
+                    "box_size_lower": box_size_lower,
+                    "box_size_upper": box_size_upper,
+                    # TODO: try base 64
+                    "img": img.tolist(),
+                },
+                separators=(",", ":"),
+            ),
+            text=True,
         )
 
-        all_boxes = []
-        for c in contours:
-            (x, y, w, h) = cv2.boundingRect(c)
-            if (
-                (w >= box_size_lower and w < box_size_upper)
-                and (h > box_size_lower and h < box_size_upper)
-                and abs(w - h) < 0.4 * w
-            ):
-                all_boxes.append(ui.Rect(x, y, w, h))
+        boxes = json.loads(out.stdout)
+        print(boxes)
+        self.boxes = [Rect(box["x"], box["y"], box["w"], box["h"]) for box in boxes]
 
-        # print("found boxes", len(all_boxes))
-
-        # filter boxes that are too similar to each other
-        self.boxes = []
-        for i, box1 in enumerate(all_boxes):
-            omit = False
-            for j in range(i + 1, len(all_boxes)):
-                box2 = all_boxes[j]
-                box1center = box1.center
-                box2center = box2.center
-                if (
-                    abs(box1center.x - box2center.x) < box_size_lower
-                    and abs(box1center.y - box2center.y) < box_size_lower
-                ):
-                    # omit this box since its center is nearby another box's center
-                    omit = True
-                    break
-
-            if not omit:
-                self.boxes.append(box1)
-
-        # print("after omissions", len(self.boxes))
+        # print(out.stdout)
+        # print(out.stderr)
 
     def go_to_box(self, box_number):
         if box_number >= len(self.boxes):
