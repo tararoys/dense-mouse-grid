@@ -27,6 +27,7 @@ import subprocess
 import sys
 import os
 import json
+import base64
 
 
 def hx(v: int) -> str:
@@ -1071,7 +1072,9 @@ class FlexMouseGrid:
         current_directory = os.path.dirname(__file__)
         find_boxes_path = os.path.join(current_directory, ".find_boxes.py")
 
-        img = np.array(screen.capture_rect(self.rect))
+        image_array = np.array(screen.capture_rect(self.rect), dtype=np.uint8)
+        image_no_alpha = image_array[:, :, :3]
+        img = base64.b64encode(image_no_alpha.tobytes()).decode("utf-8")
 
         # run openCV script to find boxes in a separate process
         out = subprocess.run(
@@ -1082,20 +1085,20 @@ class FlexMouseGrid:
                     "threshold": threshold,
                     "box_size_lower": box_size_lower,
                     "box_size_upper": box_size_upper,
-                    # TODO: try base 64
-                    "img": img.tolist(),
+                    "img": img,
+                    "width": image_array.shape[1],
+                    "height": image_array.shape[0],
                 },
                 separators=(",", ":"),
             ),
             text=True,
         )
 
-        boxes = json.loads(out.stdout)
-        print(boxes)
-        self.boxes = [Rect(box["x"], box["y"], box["w"], box["h"]) for box in boxes]
-
         # print(out.stdout)
         # print(out.stderr)
+
+        boxes = json.loads(out.stdout)
+        self.boxes = [Rect(box["x"], box["y"], box["w"], box["h"]) for box in boxes]
 
     def go_to_box(self, box_number):
         if box_number >= len(self.boxes):

@@ -2,6 +2,7 @@ import sys
 import cv2
 import numpy as np
 import json
+import base64
 
 
 class Point:
@@ -31,7 +32,7 @@ class RectEncoder(json.JSONEncoder):
 
 def find_boxes(threshold, box_size_lower, box_size_upper, img):
     # find boxes by first applying a threshold filter to the grayscale window
-    gray = cv2.cvtColor(np.array(img, dtype=np.uint8), cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # gray = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
     # view_image(thresh, "thresh")
@@ -83,8 +84,12 @@ def find_boxes(threshold, box_size_lower, box_size_upper, img):
 
 if __name__ == "__main__":
     args = json.load(sys.stdin)
-    # print(args["threshold"])
 
-    find_boxes(
-        args["threshold"], args["box_size_lower"], args["box_size_upper"], args["img"]
-    )
+    # convert base64 string to numpy array
+    img_b64 = base64.b64decode(args["img"])
+    img = np.frombuffer(img_b64, dtype=np.uint8)
+
+    # reshape array to image dimensions
+    img = img.reshape(args["height"], args["width"], 3)
+
+    find_boxes(args["threshold"], args["box_size_lower"], args["box_size_upper"], img)
