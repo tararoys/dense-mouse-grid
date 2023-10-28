@@ -20,8 +20,7 @@ from talon.types.point import Point2d
 import typing
 import string
 import time
-
-# import cv2
+import cv2
 import numpy as np
 import subprocess
 
@@ -1016,7 +1015,7 @@ class FlexMouseGrid:
         box_size_upper = self.box_config["box_size_upper"]
 
         def find_boxes_with_threshold(threshold):
-            # self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
+            self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
             return len(self.boxes)
 
         # first do a broad scan, checking number of boxes found across a range of thresholds
@@ -1063,62 +1062,62 @@ class FlexMouseGrid:
         box_size_upper = self.box_config["box_size_upper"]
 
         # perform box detection
-        # self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
+        self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
 
         # restore everything previously hidden and show boxes
         self.restore_everything()
         self.boxes_showing = True
         self.redraw()
 
-    # def find_boxes_with_config(self, threshold, box_size_lower, box_size_upper):
-    #     # find boxes by first applying a threshold filter to the grayscale window
-    #     img = np.array(screen.capture_rect(self.rect))
-    #     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    #     _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
-    #     # view_image(thresh, "thresh")
+    def find_boxes_with_config(self, threshold, box_size_lower, box_size_upper):
+        # find boxes by first applying a threshold filter to the grayscale window
+        img = np.array(screen.capture_rect(self.rect))
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
+        # view_image(thresh, "thresh")
 
-    #     # use a close morphology transform to filter out thin lines
-    #     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
-    #     self.morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-    #     # view_image(morph, "morph")
+        # use a close morphology transform to filter out thin lines
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 1))
+        self.morph = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        # view_image(morph, "morph")
 
-    #     # now search all of the contours for small square-ish things
-    #     contours, _ = cv2.findContours(
-    #         self.morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-    #     )
+        # now search all of the contours for small square-ish things
+        contours, _ = cv2.findContours(
+            self.morph, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        )
 
-    #     all_boxes = []
-    #     for c in contours:
-    #         (x, y, w, h) = cv2.boundingRect(c)
-    #         if (
-    #             (w >= box_size_lower and w < box_size_upper)
-    #             and (h > box_size_lower and h < box_size_upper)
-    #             and abs(w - h) < 0.4 * w
-    #         ):
-    #             all_boxes.append(ui.Rect(x, y, w, h))
+        all_boxes = []
+        for c in contours:
+            (x, y, w, h) = cv2.boundingRect(c)
+            if (
+                (w >= box_size_lower and w < box_size_upper)
+                and (h > box_size_lower and h < box_size_upper)
+                and abs(w - h) < 0.4 * w
+            ):
+                all_boxes.append(ui.Rect(x, y, w, h))
 
-    #     # print("found boxes", len(all_boxes))
+        # print("found boxes", len(all_boxes))
 
-    #     # filter boxes that are too similar to each other
-    #     self.boxes = []
-    #     for i, box1 in enumerate(all_boxes):
-    #         omit = False
-    #         for j in range(i + 1, len(all_boxes)):
-    #             box2 = all_boxes[j]
-    #             box1center = box1.center
-    #             box2center = box2.center
-    #             if (
-    #                 abs(box1center.x - box2center.x) < box_size_lower
-    #                 and abs(box1center.y - box2center.y) < box_size_lower
-    #             ):
-    #                 # omit this box since its center is nearby another box's center
-    #                 omit = True
-    #                 break
+        # filter boxes that are too similar to each other
+        self.boxes = []
+        for i, box1 in enumerate(all_boxes):
+            omit = False
+            for j in range(i + 1, len(all_boxes)):
+                box2 = all_boxes[j]
+                box1center = box1.center
+                box2center = box2.center
+                if (
+                    abs(box1center.x - box2center.x) < box_size_lower
+                    and abs(box1center.y - box2center.y) < box_size_lower
+                ):
+                    # omit this box since its center is nearby another box's center
+                    omit = True
+                    break
 
-    #         if not omit:
-    #             self.boxes.append(box1)
+            if not omit:
+                self.boxes.append(box1)
 
-    #     # print("after omissions", len(self.boxes))
+        # print("after omissions", len(self.boxes))
 
     def go_to_box(self, box_number):
         if box_number >= len(self.boxes):
