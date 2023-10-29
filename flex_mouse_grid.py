@@ -122,12 +122,6 @@ setting_flex_grid_font = mod.setting(
 ctx = Context()
 
 
-def view_image(image_array, name):
-    # open the image (macOS only)
-    Image.from_array(image_array).write_file(f"/tmp/{name}.jpg")
-    subprocess.run(("open", f"/tmp/{name}.jpg"))
-
-
 class FlexMouseGrid:
     def __init__(self):
         self.screen = None
@@ -986,62 +980,17 @@ class FlexMouseGrid:
         # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
         self.temporarily_hide_everything()
 
-        results = {}
-
-        def find_maximum(function, lower, upper, iterations_left):
-            middle = int((upper + lower) / 2)
-            result = function(middle)
-            results[middle] = result
-
-            # short circuit when out of iterations or results are all the same
-            if iterations_left == 0 or (results[lower] == result == results[upper]):
-                return middle
-
-            # handle triangle case, e.g. 4, 10, 6
-            if results[lower] < result > results[upper]:
-                if results[lower] > results[upper]:
-                    return find_maximum(function, lower, middle, iterations_left - 1)
-                else:
-                    return find_maximum(function, middle, upper, iterations_left - 1)
-
-            if result > results[lower]:
-                return find_maximum(function, middle, upper, iterations_left - 1)
-            else:
-                return find_maximum(function, lower, middle, iterations_left - 1)
-
         # use box lower and upper bounds from settings
         box_size_lower = self.box_config["box_size_lower"]
         box_size_upper = self.box_config["box_size_upper"]
 
-        def find_boxes_with_threshold(threshold):
-            self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
-            return len(self.boxes)
+        # use a threshold of -1 to indicate that we should scan for a good threshold
+        threshold = -1
 
-        # first do a broad scan, checking number of boxes found across a range of thresholds
-        results = {
-            threshold: find_boxes_with_threshold(threshold)
-            for threshold in range(5, 256, 25)
-        }
-
-        lower = 5
-        upper = 5
-        upper_result = results[5]
-        # iterate up threshold values. when a new max is found, store threshold as upper. old upper
-        # becomes lower.
-        for threshold, result in results.items():
-            if result >= upper_result:
-                upper_result = result
-                lower = upper
-                upper = threshold
-
-        # print("lower", lower)
-        # print("upper", upper)
-        final_result = find_maximum(find_boxes_with_threshold, lower, upper, 4)
-        print("final_threshold", final_result)
-        # print("final_boxes", results[final_result])
+        # perform box detection
+        self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
 
         # save final threshold
-        self.box_config["threshold"] = final_result
         self.save_box_config()
 
         # restore everything previously hidden and show boxes
@@ -1077,7 +1026,7 @@ class FlexMouseGrid:
         img = base64.b64encode(image_no_alpha.tobytes()).decode("utf-8")
 
         # run openCV script to find boxes in a separate process
-        out = subprocess.run(
+        process = subprocess.run(
             (sys.executable, find_boxes_path),
             capture_output=True,
             input=json.dumps(
@@ -1094,11 +1043,13 @@ class FlexMouseGrid:
             text=True,
         )
 
-        # print(out.stdout)
-        # print(out.stderr)
+        # print(process.stdout)
+        # print(process.stderr)
 
-        boxes = json.loads(out.stdout)
+        process_output = json.loads(process.stdout)
+        boxes = process_output["boxes"]
         self.boxes = [Rect(box["x"], box["y"], box["w"], box["h"]) for box in boxes]
+        self.box_config["threshold"] = process_output["threshold"]
 
     def go_to_box(self, box_number):
         if box_number >= len(self.boxes):

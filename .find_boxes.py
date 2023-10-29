@@ -5,6 +5,13 @@ import json
 import base64
 
 
+# TODO: rewrite this without talon.skia.Image dependency
+# def view_image(image_array, name):
+#     # open the image (macOS only)
+#     Image.from_array(image_array).write_file(f"/tmp/{name}.jpg")
+#     subprocess.run(("open", f"/tmp/{name}.jpg"))
+
+
 class Point:
     def __init__(self, x, y):
         self.x = x
@@ -26,15 +33,61 @@ class RectEncoder(json.JSONEncoder):
             out_dict = obj.__dict__
             del out_dict["center"]
             return out_dict
-
         return json.JSONEncoder.default(self, obj)
+
+
+def find_boxes_at_best_threshold(box_size_lower, box_size_upper, img):
+    results = {}
+
+    def find_maximum(function, lower, upper, iterations_left):
+        middle = int((upper + lower) / 2)
+        result = len(function(middle))
+        results[middle] = result
+
+        # short circuit when out of iterations or results are all the same
+        if iterations_left == 0 or (results[lower] == result == results[upper]):
+            return middle
+
+        # handle triangle case, e.g. 4, 10, 6
+        if results[lower] < result > results[upper]:
+            if results[lower] > results[upper]:
+                return find_maximum(function, lower, middle, iterations_left - 1)
+            else:
+                return find_maximum(function, middle, upper, iterations_left - 1)
+
+        if result > results[lower]:
+            return find_maximum(function, middle, upper, iterations_left - 1)
+        else:
+            return find_maximum(function, lower, middle, iterations_left - 1)
+
+    def find_boxes_at_threshold(threshold):
+        return find_boxes(threshold, box_size_lower, box_size_upper, img)
+
+    # first do a broad scan, checking number of boxes found across a range of thresholds
+    results = {
+        threshold: len(find_boxes_at_threshold(threshold))
+        for threshold in range(5, 256, 25)
+    }
+
+    lower = 5
+    upper = 5
+    upper_result = results[5]
+    # iterate up threshold values. when a new max is found, store threshold as upper. old upper
+    # becomes lower.
+    for threshold, result in results.items():
+        if result >= upper_result:
+            upper_result = result
+            lower = upper
+            upper = threshold
+
+    final_threshold = find_maximum(find_boxes_at_threshold, lower, upper, 4)
+
+    return final_threshold, find_boxes_at_threshold(final_threshold)
 
 
 def find_boxes(threshold, box_size_lower, box_size_upper, img):
     # find boxes by first applying a threshold filter to the grayscale window
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # gray = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
+    _, thresh = cv2.threshold(img, threshold, 255, cv2.THRESH_BINARY)
     # view_image(thresh, "thresh")
 
     # use a close morphology transform to filter out thin lines
@@ -78,8 +131,7 @@ def find_boxes(threshold, box_size_lower, box_size_upper, img):
 
     # print("after omissions", len(boxes))
 
-    # print boxes as json
-    print(json.dumps(boxes, cls=RectEncoder, separators=(",", ":")))
+    return boxes
 
 
 if __name__ == "__main__":
@@ -92,4 +144,19 @@ if __name__ == "__main__":
     # reshape array to image dimensions
     img = img.reshape(args["height"], args["width"], 3)
 
-    find_boxes(args["threshold"], args["box_size_lower"], args["box_size_upper"], img)
+    # convert to grayscale
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    threshold = args["threshold"]
+    if threshold >= 0:
+        boxes = find_boxes(
+            threshold, args["box_size_lower"], args["box_size_upper"], img
+        )
+    else:
+        threshold, boxes = find_boxes_at_best_threshold(
+            args["box_size_lower"], args["box_size_upper"], img
+        )
+
+    # print output as json
+    output = {"boxes": boxes, "threshold": threshold}
+    print(json.dumps(output, cls=RectEncoder, separators=(",", ":")))
