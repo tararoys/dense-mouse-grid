@@ -974,43 +974,24 @@ class FlexMouseGrid:
         self.boxes_showing = b
         self.grid_showing = g
 
-    def setup_boxes(self):
+    def find_boxes(self, scan=False):
         self.reset_window_context()
 
         # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
         self.temporarily_hide_everything()
 
-        # use box lower and upper bounds from settings
+        # use a threshold of -1 to indicate that we should scan for a good threshold
+        threshold = -1 if scan else self.box_config["threshold"]
+
+        # retrieve the app-specific box detection configuration
         box_size_lower = self.box_config["box_size_lower"]
         box_size_upper = self.box_config["box_size_upper"]
-
-        # use a threshold of -1 to indicate that we should scan for a good threshold
-        threshold = -1
 
         # perform box detection
         self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
 
         # save final threshold
         self.save_box_config()
-
-        # restore everything previously hidden and show boxes
-        self.restore_everything()
-        self.boxes_showing = True
-        self.redraw()
-
-    def find_boxes(self):
-        self.reset_window_context()
-
-        # temporarily hide everything that we have drawn so that it doesn't interfere with box detection
-        self.temporarily_hide_everything()
-
-        # retrieve the app-specific box detection configuration
-        threshold = self.box_config["threshold"]
-        box_size_lower = self.box_config["box_size_lower"]
-        box_size_upper = self.box_config["box_size_upper"]
-
-        # perform box detection
-        self.find_boxes_with_config(threshold, box_size_lower, box_size_upper)
 
         # restore everything previously hidden and show boxes
         self.restore_everything()
@@ -1259,7 +1240,7 @@ class GridActions:
 
     def flex_grid_setup_boxes():
         """Do a binary search to find best box configuration"""
-        mg.setup_boxes()
+        mg.find_boxes(scan=True)
 
     def flex_grid_go_to_box(box_number: int, mouse_button: int):
         """Go to a box"""
